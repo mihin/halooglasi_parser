@@ -15,8 +15,8 @@ def main():
     parsed_data = get_info(data, base_url)
 
 
-    save_to_gs(parsed_data) # If you want to save result to Google Drive
-    # save_to_excel(parsed_data) # If you want to save result to your computer
+    # save_to_gs(parsed_data) # If you want to save result to Google Drive
+    save_to_excel(parsed_data) # If you want to save result to your computer
 
 
 if __name__ == "__main__":

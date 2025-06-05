@@ -7,10 +7,10 @@ base_url = "https://www.halooglasi.com"
 # Variables for filtering
 # Cost in euros
 price_from = None
-price_to = '850'
+price_to = '650'
 
 # Apartment area
-apartment_area_from = '40'
+apartment_area_from = 50
 apartment_area_to = None
 
 # Number of rooms. For some reason, it has to be multiplied by 2
@@ -167,7 +167,7 @@ json_data = {
         {
             'FieldName': 'namestenost_id_l',
             'FieldValues': [
-                '564', # unfurnished
+                # '564', # unfurnished
                 '563',  # furnished, semi-furnished
                 '562',
             ],

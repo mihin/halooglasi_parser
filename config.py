@@ -7,7 +7,7 @@ base_url = "https://www.halooglasi.com"
 # Variables for filtering
 # Cost in euros
 price_from = None
-price_to = '750'
+price_to = '850'
 
 # Apartment area
 apartment_area_from = '40'
@@ -15,7 +15,7 @@ apartment_area_to = None
 
 # Number of rooms. For some reason, it has to be multiplied by 2
 # For example if you want 1.5 it should be '3'
-number_of_rooms_from = '6'
+number_of_rooms_from = '3'
 number_of_rooms_to = None
 
 # If you need the filter “Pets allowed” - uncomment 'dodatno_id_ls'
@@ -167,16 +167,17 @@ json_data = {
         {
             'FieldName': 'namestenost_id_l',
             'FieldValues': [
+                '564', # unfurnished
                 '563',  # furnished, semi-furnished
                 '562',
             ],
         },
-        # {
-        #     'FieldName': 'dodatno_id_ls',
-        #     'FieldValues': [
-        #         '12000009', # Uncomment if the filter “Pets allowed” is needed
-        #     ],
-        # },
+        {   # Uncomment if the filter “Pets allowed” is needed
+            # 'FieldName': 'dodatno_id_ls',
+            # 'FieldValues': [
+            #     '12000009',
+            # ],
+        },
         {
             'FieldName': 'ostalo_id_ls',
             'FieldValues': [

@@ -1,7 +1,8 @@
 # created by virtualenv automatically
 .venv
 .idea/
-.halooglasi_data.json
+halooglasi_data.json
+.DS_Store
 __pycache__/
 creds.json
 halooglasi_data.xlsx

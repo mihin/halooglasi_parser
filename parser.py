@@ -40,7 +40,7 @@ def get_info(apartments_data, base_url, max_days_old=7):
             try:
                 # Parse date in format "14.07.2025."
                 date_clean = publish_date_str.replace(".", "")
-                publish_date = datetime.strptime(date_clean, "%d.%m.%Y")
+                publish_date = datetime.strptime(date_clean, "%d%m%Y")
                 
                 # Skip if older than specified days
                 if publish_date < cutoff_date:
@@ -60,15 +60,22 @@ def get_info(apartments_data, base_url, max_days_old=7):
         
         # Extract room information
         room_match = re.search(r'(\d+\.?\d*)\s*stan', title)
-        rooms = room_match.group(1) + " soba" if room_match else "N/A"
+        rooms = room_match.group(1) + " rooms" if room_match else "N/A"
         
         # Extract agent type
         agent_span = soup.find("span", {"data-field-name": "oglasivac_nekretnine_s"})
-        agent_type = agent_span.get_text().strip() if agent_span else "N/A"
+        agent_type_raw = agent_span.get_text().strip() if agent_span else "N/A"
+        
+        # Translate agent type to English
+        agent_type_translations = {
+            "Agencija": "Agency",
+            "Vlasnik": "Owner"
+        }
+        agent_type = agent_type_translations.get(agent_type_raw, agent_type_raw)
         
         # Extract image count
         img_count_span = soup.find("span", class_="pi-img-count-num")
-        image_count = img_count_span.get_text().strip() + " slika" if img_count_span else "N/A"
+        image_count = img_count_span.get_text().strip() + " images" if img_count_span else "N/A"
 
         yield {
             'id': apartment_id,

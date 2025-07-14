@@ -56,24 +56,24 @@ Search criteria:
 
 Found 144 apartments matching your criteria
 
-📅 14.07.2025. (50 oglasa)
+📅 14.07.2025. (50 listings)
 ------------------------------------------------------------
 
 1. 💰 €121.500
    📍 Rakovica
-   📐 55m² • 2.5 soba • 2.209 €/m²
-   👤 Agencija • 14 slika
+   📐 55m² • 2.5 rooms • 2.209 €/m²
+   👤 Agency • 14 images
    📝 Rakovica, 2.5 stan, zgrada od f.cigle ID#1697
    🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
 
 2. 💰 €121.500
    📍 Zvezdara
    📐 45m² • N/A • N/A
-   👤 Agencija • 12 slika
+   👤 Agency • 12 images
    📝 Prodaja stana - Zvezdara, 45m2
    🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
 
-📅 13.07.2025. (25 oglasa)
+📅 13.07.2025. (25 listings)
 ------------------------------------------------------------
 ...
 ```
@@ -93,24 +93,24 @@ Search criteria:
 
 Found 144 apartments matching your criteria
 
-📅 14.07.2025. (50 oglasa)
+📅 14.07.2025. (50 listings)
 ------------------------------------------------------------
 
 1. 💰 €121.500
    📍 Rakovica
-   📐 55m² • 2.5 soba • 2.209 €/m²
-   👤 Agencija • 14 slika
+   📐 55m² • 2.5 rooms • 2.209 €/m²
+   👤 Agency • 14 images
    📝 Rakovica, 2.5 stan, zgrada od f.cigle ID#1697
    🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
 
 2. 💰 €121.500
    📍 Zvezdara
    📐 45m² • N/A • N/A
-   👤 Agencija • 12 slika
+   👤 Agency • 12 images
    📝 Prodaja stana - Zvezdara, 45m2
    🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
 
-📅 13.07.2025. (25 oglasa)
+📅 13.07.2025. (25 listings)
 ------------------------------------------------------------
 ...
 ```

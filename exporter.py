@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 
 
-def save_to_excel(data_generator, output_file="halooglasi_data.xlsx"):
+def save_to_excel(data_generator, output_file="halooglasi_data.xlsx", max_days_old=7):
     """Write generator to xlsx file with enhanced formatting"""
     wb = Workbook()
     ws = wb.active
@@ -47,7 +47,7 @@ def save_to_excel(data_generator, output_file="halooglasi_data.xlsx"):
     for date_str in sorted_dates:
         apartments = apartments_by_date[date_str]
         
-        print(f"\n📅 {date_str} ({len(apartments)} oglasa)")
+        print(f"\n📅 {date_str} ({len(apartments)} listings)")
         print("-" * 60)
         
         for i, apt in enumerate(apartments, 1):
@@ -61,12 +61,12 @@ def save_to_excel(data_generator, output_file="halooglasi_data.xlsx"):
     wb.save(output_file)
     
     print(f"\n{'='*80}")
-    print(f"PREGLED REZULTATA")
+    print(f"SEARCH RESULTS SUMMARY")
     print(f"{'='*80}")
-    print(f"✅ Ukupno pronađeno: {total_count} stanova")
-    print(f"✅ Grupisano po datumima: {len(sorted_dates)} različitih datuma")
-    print(f"✅ Podaci sačuvani u: {output_file}")
-    print(f"✅ Rezultati stariji od 7 dana su isključeni")
+    print(f"✅ Total found: {total_count} apartments")
+    print(f"✅ Grouped by dates: {len(sorted_dates)} different dates")
+    print(f"✅ Data saved to: {output_file}")
+    print(f"✅ Results older than {max_days_old} days excluded")
     print(f"{'='*80}")
 
 
@@ -76,7 +76,7 @@ def parse_date_for_sorting(date_str):
         return datetime.min
     try:
         date_clean = date_str.replace(".", "")
-        return datetime.strptime(date_clean, "%d.%m.%Y")
+        return datetime.strptime(date_clean, "%d%m%Y")
     except ValueError:
         return datetime.min
 

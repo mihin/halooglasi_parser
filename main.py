@@ -4,7 +4,7 @@ from parser import get_info
 from exporter import save_to_gs, save_to_excel
 
 # Configuration: Number of days to include in results (older results will be filtered out)
-MAX_DAYS_OLD = 7
+MAX_DAYS_OLD = 4
 
 
 def main():
@@ -48,7 +48,7 @@ def main():
         return
 
     # Save the data (convert back to generator)
-    save_to_excel(iter(apartments_list))
+    save_to_excel(iter(apartments_list), max_days_old=MAX_DAYS_OLD)
     # save_to_gs(iter(apartments_list))  # Uncomment if you want to save to Google Sheets
 
 

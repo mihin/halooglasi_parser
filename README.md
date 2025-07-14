@@ -49,16 +49,108 @@ Search criteria:
   - Price: €110000 - €126000
   - Area: 45m² minimum
   - Rooms: 4 - 9 (system values)
-  - Floor: 3 minimum (3rd floor+)
+  - Floor: PR minimum (ground floor+)
   - Legal status: 12000004 (legally registered)
   - Location areas: 51 Belgrade areas
+  - Date filter: Results from last 7 days only
 
-Found 114 apartments matching your criteria
+Found 144 apartments matching your criteria
 
-1. ID: 5425645730099
-   Price: €121,500
-   Location: Rakovica, 2.5 stan, zgrada od f.cigle
-   Link: https://www.halooglasi.com/nekretnine/prodaja-stanova/...
+📅 14.07.2025. (50 oglasa)
+------------------------------------------------------------
+
+1. 💰 €121.500
+   📍 Rakovica
+   📐 55m² • 2.5 soba • 2.209 €/m²
+   👤 Agencija • 14 slika
+   📝 Rakovica, 2.5 stan, zgrada od f.cigle ID#1697
+   🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
+
+2. 💰 €121.500
+   📍 Zvezdara
+   📐 45m² • N/A • N/A
+   👤 Agencija • 12 slika
+   📝 Prodaja stana - Zvezdara, 45m2
+   🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
+
+📅 13.07.2025. (25 oglasa)
+------------------------------------------------------------
+...
+```
+
+## 📊 Output Example
+
+```
+Starting apartment search...
+Search criteria:
+  - Price: €110000 - €126000
+  - Area: 45m² minimum
+  - Rooms: 4 - 9 (system values)
+  - Floor: PR minimum (ground floor+)
+  - Legal status: 12000004 (legally registered)
+  - Location areas: 51 Belgrade areas
+  - Date filter: Results from last 7 days only
+
+Found 144 apartments matching your criteria
+
+📅 14.07.2025. (50 oglasa)
+------------------------------------------------------------
+
+1. 💰 €121.500
+   📍 Rakovica
+   📐 55m² • 2.5 soba • 2.209 €/m²
+   👤 Agencija • 14 slika
+   📝 Rakovica, 2.5 stan, zgrada od f.cigle ID#1697
+   🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
+
+2. 💰 €121.500
+   📍 Zvezdara
+   📐 45m² • N/A • N/A
+   👤 Agencija • 12 slika
+   📝 Prodaja stana - Zvezdara, 45m2
+   🔗 https://www.halooglasi.com/nekretnine/prodaja-stanova/...
+
+📅 13.07.2025. (25 oglasa)
+------------------------------------------------------------
+...
+```
+
+## 📋 Enhanced Output Features
+
+### ✅ **What's New:**
+- **🚫 Hidden IDs**: Apartment IDs are hidden for cleaner display
+- **📅 Date Grouping**: Results grouped by publish date
+- **📊 Rich Details**: Area, rooms, price per m², agent type, image count
+- **📍 Location Extraction**: Automatic location parsing from titles
+- **🎨 Visual Icons**: Emoji icons for better organization
+- **📈 Statistics**: Comprehensive summary with counts and filters
+
+### ✅ **Information Displayed:**
+- **💰 Price**: Formatted with thousands separator
+- **📍 Location**: Extracted from listing title
+- **📐 Details**: Area, room count, price per m²
+- **👤 Agent**: Agency or owner information
+- **📷 Images**: Number of photos available
+- **📝 Description**: Full listing title
+- **🔗 Link**: Direct link to the property
+
+### ✅ **Excel Export Enhanced:**
+- **More Columns**: Price/m², Location, Area, Rooms, Agent, Images, Date
+- **Better Organization**: Structured data for analysis
+- **Date Sorting**: Newest listings first
+
+## 🕒 Date Filtering
+
+The script automatically filters results to show only recent listings:
+
+- **Default**: Last 7 days only
+- **Configurable**: Change `MAX_DAYS_OLD` variable in `main.py`
+- **Automatic**: Older listings are excluded automatically
+- **Grouped**: Results are grouped by publish date (newest first)
+
+```python
+# In main.py - adjust this value to change the date filter
+MAX_DAYS_OLD = 7  # Show only results from last 7 days
 ```
 
 ## ⚙️ Configuration
@@ -96,8 +188,23 @@ The script searches in 51 specific Belgrade areas. To modify locations, update t
 
 ## 📁 Output Files
 
-- **`halooglasi_data.xlsx`**: Excel file with apartment data (ID, Price, Description, Link)
+- **`halooglasi_data.xlsx`**: Enhanced Excel file with columns:
+  - Price (€), Price/m², Location, Area, Rooms, Agent, Images, Date, Description, Link
 - **`halooglasi_data.json`**: Raw JSON response from the API
+
+### Excel File Structure:
+| Column | Description |
+|--------|-------------|
+| Price (€) | Property price in euros |
+| Price/m² | Price per square meter |
+| Location | Extracted location from title |
+| Area | Property area in m² |
+| Rooms | Number of rooms |
+| Agent | Agency or owner |
+| Images | Number of photos |
+| Date | Publish date |
+| Description | Full listing title |
+| Link | Direct URL to property |
 
 ## 🔧 Advanced Usage
 

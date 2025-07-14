@@ -3,6 +3,9 @@ from scraper import fetch_data
 from parser import get_info
 from exporter import save_to_gs, save_to_excel
 
+# Configuration: Number of days to include in results (older results will be filtered out)
+MAX_DAYS_OLD = 7
+
 
 def main():
     url = "https://www.halooglasi.com/Quiddita.Widgets.Ad/AdCategoryBasicSearchWidgetAux/GetSidebarData"
@@ -17,6 +20,7 @@ def main():
     print(f"  - Category: {json_data['CategoryId']} (1=buy, 13=rent)")
     print(f"  - Legal status: {json_data['FieldORQueries'][1]['FieldValues'][0]} (12000004)")
     print(f"  - Location areas: {len(json_data['MultiFieldORQueries'][0]['FieldValues'])} Belgrade areas")
+    print(f"  - Date filter: Results from last {MAX_DAYS_OLD} days only")
     print("\nFetching data...")
 
     # Getting the data
@@ -26,34 +30,26 @@ def main():
         print("ERROR: No data received from the API")
         return
 
-    # Processing the data
-    data = apartments_data.get("Ads", [])
-    print(f"Raw data received: {len(data)} apartments")
+    raw_count = len(apartments_data)
+    print(f"Raw data received: {raw_count} apartments")
+
+    # Parse the data with date filtering
+    parsed_data = get_info(apartments_data, base_url, max_days_old=MAX_DAYS_OLD)
+
+    # Convert generator to list to get count and preserve data
+    apartments_list = list(parsed_data)
+    filtered_count = len(apartments_list)
     
-    if not data:
-        print("WARNING: No apartments found in the response")
-        print("Full response structure:")
-        print(apartments_data.keys())
+    print(f"Filtered data (last {MAX_DAYS_OLD} days): {filtered_count} apartments")
+    
+    if filtered_count == 0:
+        print(f"\n⚠️  No apartments found within the last {MAX_DAYS_OLD} days.")
+        print("Try increasing MAX_DAYS_OLD in main.py or check if there are new listings.")
         return
 
-    parsed_data = get_info(data, base_url)
-    parsed_list = list(parsed_data)
-    
-    print(f"Parsed data: {len(parsed_list)} apartments")
-    
-    if not parsed_list:
-        print("WARNING: No apartments after parsing")
-        return
-
-    # save_to_gs(parsed_list) # If you want to save result to Google Drive
-    result_count = save_to_excel(parsed_list) # If you want to save result to your computer
-    
-    if result_count == 0:
-        print("\nNo apartments found matching your criteria. Consider:")
-        print("1. Expanding the price range")
-        print("2. Reducing minimum area requirement")
-        print("3. Including more location areas")
-        print("4. Checking if the search parameters are correct")
+    # Save the data (convert back to generator)
+    save_to_excel(iter(apartments_list))
+    # save_to_gs(iter(apartments_list))  # Uncomment if you want to save to Google Sheets
 
 
 if __name__ == "__main__":

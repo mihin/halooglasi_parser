@@ -1,57 +1,122 @@
 import gspread
-import pandas as pd
 from openpyxl import Workbook
-
-
-def save_to_gs(generator):
-    columns = ["Apartment ID", "Price", "Description", "Link"]
-    df = pd.DataFrame(generator, columns=columns)
-
-    gc = gspread.service_account(filename="creds.json")
-
-    # Open a sheet from a spreadsheet in one go
-    file_name = "halooglasi_parsing_report"
-    wks = gc.open(file_name).sheet1
-
-    wks.update([df.columns.values.tolist()] + df.values.tolist())
-    wks.format('A1:D1', {'textFormat': {'bold': True}})
-    print(f"Data saved to the file {file_name} in your Google Drive")
+from collections import defaultdict
+from datetime import datetime
 
 
 def save_to_excel(data_generator, output_file="halooglasi_data.xlsx"):
-    """Write generator to xlsx file"""
+    """Write generator to xlsx file with enhanced formatting"""
     wb = Workbook()
     ws = wb.active
     ws.title = "Ads Data"
-    ws.append(["Id", "Cost in euros", "Description", "Link"])  # Column headers
+    ws.append(["Price (€)", "Price/m²", "Location", "Area", "Rooms", "Agent", "Images", "Date", "Description", "Link"])
 
-    # Set for storing unique Id's
-    ids_set = set()
-    count = 0
-
+    # Group apartments by date and collect data
+    apartments_by_date = defaultdict(list)
+    total_count = 0
+    
     print("\n" + "="*80)
     print("APARTMENT SEARCH RESULTS")
     print("="*80)
     
-    for row in data_generator:
-        apartment_id = row[0]
-        if apartment_id in ids_set:
-            continue  # Skip duplicate Ids
-        ids_set.add(apartment_id)  # Adding Id to the set
-        ws.append(row)  # Adding a row to xlsx file
-        count += 1
+    for apartment_data in data_generator:
+        total_count += 1
         
-        # Print each result to console
-        print(f"\n{count}. ID: {row[0]}")
-        print(f"   Price: {row[1]}")
-        print(f"   Description: {row[2][:100]}..." if len(row[2]) > 100 else f"   Description: {row[2]}")
-        print(f"   Link: {row[3]}")
-
+        # Group by date
+        date_key = apartment_data['publish_date_str']
+        apartments_by_date[date_key].append(apartment_data)
+        
+        # Add to Excel
+        ws.append([
+            apartment_data['price'],
+            apartment_data['price_per_m2'],
+            apartment_data['location'],
+            apartment_data['area'],
+            apartment_data['rooms'],
+            apartment_data['agent_type'],
+            apartment_data['image_count'],
+            apartment_data['publish_date_str'],
+            apartment_data['title'],
+            apartment_data['link']
+        ])
+    
+    # Sort dates (newest first)
+    sorted_dates = sorted(apartments_by_date.keys(), key=lambda x: parse_date_for_sorting(x), reverse=True)
+    
+    # Display results grouped by date
+    for date_str in sorted_dates:
+        apartments = apartments_by_date[date_str]
+        
+        print(f"\n📅 {date_str} ({len(apartments)} oglasa)")
+        print("-" * 60)
+        
+        for i, apt in enumerate(apartments, 1):
+            print(f"\n{i}. 💰 {format_price(apt['price'])}")
+            print(f"   📍 {apt['location']}")
+            print(f"   📐 {apt['area']} • {apt['rooms']} • {apt['price_per_m2']}")
+            print(f"   👤 {apt['agent_type']} • {apt['image_count']}")
+            print(f"   📝 {apt['title']}")
+            print(f"   🔗 {apt['link']}")
+    
     wb.save(output_file)
     
-    print("\n" + "="*80)
-    print(f"SUMMARY: Found {count} apartments matching your criteria")
-    print(f"Data saved to the file {output_file} on your computer")
-    print("="*80)
+    print(f"\n{'='*80}")
+    print(f"PREGLED REZULTATA")
+    print(f"{'='*80}")
+    print(f"✅ Ukupno pronađeno: {total_count} stanova")
+    print(f"✅ Grupisano po datumima: {len(sorted_dates)} različitih datuma")
+    print(f"✅ Podaci sačuvani u: {output_file}")
+    print(f"✅ Rezultati stariji od 7 dana su isključeni")
+    print(f"{'='*80}")
 
-    return count
+
+def parse_date_for_sorting(date_str):
+    """Parse date string for sorting purposes"""
+    if date_str == "N/A" or date_str == "Invalid date":
+        return datetime.min
+    try:
+        date_clean = date_str.replace(".", "")
+        return datetime.strptime(date_clean, "%d.%m.%Y")
+    except ValueError:
+        return datetime.min
+
+
+def format_price(price):
+    """Format price with thousands separator"""
+    if price == "N/A":
+        return "N/A"
+    return f"€{price:,}".replace(",", ".")
+
+
+def save_to_gs(data_generator):
+    """Save data to Google Sheets"""
+    import gspread
+    
+    gc = gspread.service_account(filename="creds.json")
+    sh = gc.open("cityexpert_parsing_report")
+    worksheet = sh.sheet1
+    
+    # Clear existing data
+    worksheet.clear()
+    
+    # Add headers
+    headers = ["Price (€)", "Price/m²", "Location", "Area", "Rooms", "Agent", "Images", "Date", "Description", "Link"]
+    worksheet.append_row(headers)
+    
+    # Add data
+    for apartment_data in data_generator:
+        row = [
+            apartment_data['price'],
+            apartment_data['price_per_m2'],
+            apartment_data['location'],
+            apartment_data['area'],
+            apartment_data['rooms'],
+            apartment_data['agent_type'],
+            apartment_data['image_count'],
+            apartment_data['publish_date_str'],
+            apartment_data['title'],
+            apartment_data['link']
+        ]
+        worksheet.append_row(row)
+    
+    print("Data successfully saved to Google Sheets!")

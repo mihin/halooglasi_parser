@@ -8,7 +8,10 @@ def fetch_data(url, cookies, headers, json_data, output_file="halooglasi_data.js
     if response.status_code != 200:
         raise Exception(f"HTTP Error: {response.status_code}")
 
+    response_data = response.json()
+    
     with open(output_file, "w", encoding="utf-8") as file:
-        json.dump(response.json(), file, ensure_ascii=False, indent=4)
+        json.dump(response_data, file, ensure_ascii=False, indent=4)
 
-    return response.json()
+    # Return the Ads data directly for processing
+    return response_data.get("Ads", [])

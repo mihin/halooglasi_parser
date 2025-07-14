@@ -27,13 +27,31 @@ def save_to_excel(data_generator, output_file="halooglasi_data.xlsx"):
 
     # Set for storing unique Id's
     ids_set = set()
+    count = 0
 
+    print("\n" + "="*80)
+    print("APARTMENT SEARCH RESULTS")
+    print("="*80)
+    
     for row in data_generator:
         apartment_id = row[0]
         if apartment_id in ids_set:
             continue  # Skip duplicate Ids
         ids_set.add(apartment_id)  # Adding Id to the set
         ws.append(row)  # Adding a row to xlsx file
+        count += 1
+        
+        # Print each result to console
+        print(f"\n{count}. ID: {row[0]}")
+        print(f"   Price: {row[1]}")
+        print(f"   Description: {row[2][:100]}..." if len(row[2]) > 100 else f"   Description: {row[2]}")
+        print(f"   Link: {row[3]}")
 
     wb.save(output_file)
+    
+    print("\n" + "="*80)
+    print(f"SUMMARY: Found {count} apartments matching your criteria")
     print(f"Data saved to the file {output_file} on your computer")
+    print("="*80)
+
+    return count

@@ -7,7 +7,7 @@ from halooglasi_parser.scraper import fetch_data
 from halooglasi_parser.parser import get_info
 from halooglasi_parser.exporter import save_to_gs, save_to_excel, display_apartments_to_console
 from halooglasi_parser.id_manager import load_previous_ids, save_current_ids, get_new_apartments, get_all_ids_from_apartments
-from halooglasi_parser.telegram_exporter import send_new_apartments_to_telegram, send_summary_to_telegram
+from halooglasi_parser.telegram_exporter import send_new_apartments_to_telegram
 
 # Configuration: Number of days to include in results (older results will be filtered out)
 MAX_DAYS_OLD = 4
@@ -83,8 +83,6 @@ def main():
     # Export new apartments to Telegram
     if EXPORT_TO_TELEGRAM:
         send_new_apartments_to_telegram(new_apartments, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-        send_summary_to_telegram(filtered_count, len(new_apartments), len(existing_apartments), 
-                                TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, MAX_DAYS_OLD)
     else:
         print(f"📱 Telegram export disabled (set EXPORT_TO_TELEGRAM=True to enable)")
 

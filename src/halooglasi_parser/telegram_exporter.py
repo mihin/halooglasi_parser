@@ -106,32 +106,4 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, chat_id):
     print(f"📱 Telegram export complete: {success_count}/{len(new_apartments)} messages sent successfully")
 
 
-def send_summary_to_telegram(total_count, new_count, existing_count, bot_token, chat_id, max_days_old):
-    """Send a summary message to Telegram"""
-    if bot_token == "YOUR_BOT_TOKEN_HERE" or chat_id == "YOUR_CHAT_ID_HERE":
-        return
-    
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    if new_count > 0:
-        summary = f"""📊 <b>HaloOglasi Search Summary</b>
-🕐 <i>{timestamp}</i>
-
-✅ <b>Total found:</b> {total_count} apartments
-🆕 <b>New apartments:</b> {new_count}
-📋 <b>Previously seen:</b> {existing_count}
-⏰ <b>Filter:</b> Last {max_days_old} days only
-
-{new_count} new listing{"s" if new_count != 1 else ""} sent above! 🎉"""
-    else:
-        summary = f"""📊 <b>HaloOglasi Search Summary</b>
-🕐 <i>{timestamp}</i>
-
-✅ <b>Total found:</b> {total_count} apartments
-🆕 <b>New apartments:</b> {new_count}
-📋 <b>Previously seen:</b> {existing_count}
-⏰ <b>Filter:</b> Last {max_days_old} days only
-
-No new listings found this time. 🔍"""
-    
-    send_telegram_message(bot_token, chat_id, summary) 
+ 

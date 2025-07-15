@@ -122,7 +122,7 @@ tmux attach-session -t halooglasi  # to reattach
 
 ### Basic Settings (main.py)
 ```python
-MAX_DAYS_OLD = 4           # Show apartments from last 4 days
+MAX_DAYS_OLD = 2           # Show apartments from last 2 days
 EXPORT_TO_EXCEL = False    # Generate Excel file (slower)
 EXPORT_TO_TELEGRAM = True  # Send to Telegram bot
 ```

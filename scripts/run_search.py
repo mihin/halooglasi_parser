@@ -11,7 +11,7 @@ from halooglasi_parser.id_manager import load_previous_ids, save_current_ids, ge
 from halooglasi_parser.telegram_exporter import send_new_apartments_to_telegram
 
 # Configuration: Number of days to include in results (older results will be filtered out)
-MAX_DAYS_OLD = 4
+MAX_DAYS_OLD = 2
 
 # Configuration: Export to Excel file (set to True if you want Excel output)
 EXPORT_TO_EXCEL = False
@@ -66,7 +66,7 @@ def main():
     
     if filtered_count == 0:
         print(f"\n⚠️  No apartments found within the last {MAX_DAYS_OLD} days.")
-        print("Try increasing MAX_DAYS_OLD in main.py or check if there are new listings.")
+        print("Try increasing MAX_DAYS_OLD in run_search.py or check if there are new listings.")
         return
 
     # Separate new and existing apartments

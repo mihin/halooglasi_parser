@@ -76,7 +76,7 @@ on:
   env:
     TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-    MAX_DAYS_OLD: 7  # Override default of 4 days
+    MAX_DAYS_OLD: 7  # Override default of 2 days
     EXPORT_TO_EXCEL: true  # Enable Excel export
 ```
 

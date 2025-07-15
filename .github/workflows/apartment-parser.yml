@@ -31,12 +31,26 @@ jobs:
       run: |
         mkdir -p data logs
     
-    - name: Download previous apartment tracking data (may fail on first run)
-      uses: actions/download-artifact@v4
-      with:
-        name: apartment-tracking-data
-        path: data/
-      continue-on-error: true  # Expected to fail on first run - this is normal
+    - name: Download previous apartment tracking data
+      run: |
+        echo "🔍 Looking for previous tracking data from last successful run..."
+        
+        # Get the last successful workflow run ID
+        LAST_RUN_ID=$(gh run list --workflow=apartment-parser.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
+        
+        if [ -n "$LAST_RUN_ID" ] && [ "$LAST_RUN_ID" != "null" ]; then
+          echo "📥 Attempting to download from run ID: $LAST_RUN_ID"
+          if gh run download $LAST_RUN_ID --name apartment-tracking-data --dir data/ 2>/dev/null; then
+            echo "✅ Previous tracking data downloaded successfully"
+          else
+            echo "⚠️ Download failed, will create new tracking file"
+          fi
+        else
+          echo "📝 No previous successful runs found (normal for first run)"
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+      continue-on-error: true
     
     - name: Initialize tracking file if needed
       run: |

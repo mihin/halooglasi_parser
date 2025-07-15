@@ -85,10 +85,11 @@ on:
 The workflow automatically maintains apartment tracking between runs:
 
 ### How It Works
-1. **Download previous data**: Each run downloads `previous_apartment_ids.json` from the last execution
-2. **Track new apartments**: Parser identifies NEW vs PREVIOUSLY SEEN apartments
-3. **Upload updated data**: Saves updated tracking file for the next run
-4. **90-day retention**: Tracking data is preserved for 3 months
+1. **Find last run**: Uses GitHub CLI to find the last successful workflow run
+2. **Download previous data**: Downloads `previous_apartment_ids.json` from that run
+3. **Track new apartments**: Parser identifies NEW vs PREVIOUSLY SEEN apartments
+4. **Upload updated data**: Saves updated tracking file for the next run
+5. **90-day retention**: Tracking data is preserved for 3 months
 
 ### Benefits
 - 🎯 **Only notifies about NEW apartments** (no duplicate Telegram messages)
@@ -98,14 +99,14 @@ The workflow automatically maintains apartment tracking between runs:
 - 🧹 **Clean storage** (automatically removes temporary files after each run)
 
 ### First Run Behavior
-- **Download step**: ❌ Shows RED ERROR "Artifact not found" (this is NORMAL - ignore it!)
-- **Continue**: Workflow continues despite the error (configured with `continue-on-error`)
-- **Auto-recovery**: Next step creates empty tracking file `[]` 
+- **Search step**: 🔍 Looks for previous successful runs (finds none)
+- **Message**: "No previous successful runs found (normal for first run)"
+- **Auto-recovery**: Creates empty tracking file `[]` 
 - **Result**: All found apartments will be marked as "NEW" 
 - **Upload**: Creates initial tracking artifact for subsequent runs
-- **Subsequent runs**: ✅ Will download successfully and only show truly new listings
+- **Subsequent runs**: ✅ Will download from last successful run and only show truly new listings
 
-**IMPORTANT**: The red ❌ "Unable to download artifact(s): Artifact not found" error on first run is **completely expected**. The workflow will complete successfully. Just ignore this error!
+**IMPROVED**: Now uses GitHub CLI to properly download from previous runs instead of showing confusing error messages.
 
 ## 📊 Monitoring
 
@@ -136,15 +137,14 @@ Configure GitHub to notify you of workflow failures:
 
 ### Common Issues
 
-#### 1. "Artifact not found: apartment-tracking-data"
-**Problem**: First run shows red ❌ "Unable to download artifact(s): Artifact not found" error
+#### 1. "No previous successful runs found"
+**Problem**: Message shows "No previous successful runs found" or download fails
 **Solution**: 
-- ✅ This is **100% NORMAL** for the first run - **IGNORE THIS ERROR**
-- The step is configured with `continue-on-error: true` 
-- The next step automatically creates an empty tracking file
-- The workflow will complete successfully despite this "error"
-- Subsequent runs will work without this error
-- **No action needed** - this is expected first-run behavior
+- ✅ **Normal for first run** - no previous runs exist yet
+- ✅ **Normal if previous run failed** - only downloads from successful runs
+- The workflow automatically creates an empty tracking file
+- Subsequent successful runs will have tracking data available
+- **No action needed** - this is expected behavior
 
 #### 2. "Invalid secrets"
 **Problem**: Telegram credentials not working

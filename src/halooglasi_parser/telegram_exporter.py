@@ -38,7 +38,6 @@ def format_apartment_for_telegram(apartment):
     message_parts = []
     
     # 1. Title, Price, Price/m² 
-    message_parts.append(f"🆕 <b>NEW APARTMENT!</b>")
     message_parts.append(f"📝 <b>{apartment['title']}</b>")
     message_parts.append(f"💰 <b>{price} • {apartment['price_per_m2']}</b> 🆕")
     

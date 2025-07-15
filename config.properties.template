@@ -9,19 +9,22 @@ TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 # Get your chat ID from @userinfobot on Telegram  
 TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
 
-# Future API Configuration (examples)
-# API_KEY=your_api_key_here
-# API_SECRET=your_api_secret_here
+# Search Configuration (Optional - defaults provided)
+# Search type: 'buy' for purchasing apartments, 'rent' for renting apartments  
+# SEARCH_TYPE=buy
 
-# Future Database Configuration (examples)
-# DB_PASSWORD=your_db_password_here
-# DB_HOST=localhost
-# DB_USER=your_db_user_here
+# Price range in euros
+# PRICE_FROM=110000
+# PRICE_TO=126000
 
-# Future Email Configuration (examples)
-# EMAIL_PASSWORD=your_email_password_here
-# SMTP_HOST=smtp.gmail.com
-# SMTP_PORT=587
+# Apartment area in square meters
+# APARTMENT_AREA_FROM=45
+# APARTMENT_AREA_TO=
 
-# Future Webhook Configuration (examples)
-# WEBHOOK_SECRET=your_webhook_secret_here 
+# Number of rooms (system values: 4-9 equals 2.0-4.5 rooms)
+# NUMBER_OF_ROOMS_FROM=4
+# NUMBER_OF_ROOMS_TO=9
+
+# Floor preference (PR=ground floor, leave empty for any floor)
+# FLOOR_FROM=PR
+# FLOOR_TO= 

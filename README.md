@@ -13,20 +13,41 @@ cd halooglasi_parser
 pip install -r requirements.txt
 ```
 
-### 2. Configure Telegram (Optional)
+### 2. Configure Settings (Optional)
 ```bash
-# Copy the template and add your credentials
+# Copy the template and customize settings
 cp config.properties.template config.properties
 
-# Edit config.properties:
+# Edit config.properties for:
 TELEGRAM_BOT_TOKEN=your_bot_token_here  # Get from @BotFather
 TELEGRAM_CHAT_ID=your_chat_id_here      # Get from @userinfobot
+
+# Search filters (optional - defaults provided):
+SEARCH_TYPE=buy                         # 'buy' or 'rent'
+PRICE_FROM=110000                       # Min price in euros
+PRICE_TO=126000                         # Max price in euros
+APARTMENT_AREA_FROM=45                  # Min area in m²
+NUMBER_OF_ROOMS_FROM=4                  # Min rooms (system value)
+NUMBER_OF_ROOMS_TO=9                    # Max rooms (system value)
 ```
 
 ### 3. Run
 ```bash
 cd scripts
 python run_search.py
+```
+or 
+```bash
+make run
+```
+
+Automated monitoring (local)
+```bash
+cd scripts && python scheduler.py
+```
+or 
+```bash
+make schedule
 ```
 
 ## ☁️ GitHub Actions (Recommended)
@@ -51,20 +72,22 @@ python run_search.py
 
 ## ⚙️ Configuration
 
-### Search Settings (src/halooglasi_parser/config.py)
-```python
-price_from = '110000'      # Min price (€)
-price_to = '126000'        # Max price (€)
-apartment_area_from = 45   # Min area (m²)
-number_of_rooms_from = '4' # Min rooms
-number_of_rooms_to = '9'   # Max rooms
+### Search Settings (config.properties or environment variables)
+```bash
+SEARCH_TYPE=buy            # 'buy' or 'rent'
+PRICE_FROM=110000          # Min price (€)
+PRICE_TO=126000            # Max price (€)
+APARTMENT_AREA_FROM=45     # Min area (m²)
+NUMBER_OF_ROOMS_FROM=4     # Min rooms (=2.0 rooms)
+NUMBER_OF_ROOMS_TO=9       # Max rooms (=4.5 rooms)
+FLOOR_FROM=PR              # Floor preference (PR=ground floor)
 ```
 
 ### App Settings (scripts/run_search.py)
 ```python
-MAX_DAYS_OLD = 2           # Show apartments from last 2 days
-EXPORT_TO_EXCEL = False    # Generate Excel file (slower)
 EXPORT_TO_TELEGRAM = True  # Send to Telegram bot
+EXPORT_TO_EXCEL = False    # Generate Excel file (slower)
+MAX_DAYS_OLD = 2           # Output apartments from last 2 days (console/excel)
 ```
 
 ## 🆕 Key Features
@@ -100,17 +123,6 @@ EXPORT_TO_TELEGRAM = True  # Send to Telegram bot
 🏠 55 m² • 2.5 rooms
 👤 Agency • 14 images
 ```
-
-## 🔧 Commands
-
-```bash
-# Manual search (local)
-cd scripts && python run_search.py
-
-# Automated monitoring (local)
-cd scripts && python scheduler.py
-```
-
 ## 📋 Current Search Criteria
 
 - **Type**: Apartments for purchase (not rent)
@@ -119,5 +131,3 @@ cd scripts && python scheduler.py
 - **Area**: 45m² minimum
 - **Rooms**: 2.0 - 4.5 rooms
 - **Legal**: Legally registered only
-
-Perfect for real estate monitoring, property investment research, and apartment hunting automation!

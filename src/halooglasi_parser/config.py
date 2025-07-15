@@ -4,22 +4,28 @@ user = fake_user_agent.user_agent()
 
 base_url = "https://www.halooglasi.com"
 
-# Variables for filtering - BUYING APARTMENTS (BASED ON PROVIDED URL)
-# Cost in euros (buying price range)
-price_from = '110000'
-price_to = '126000'
+# Import configuration loader for credentials and filters
+from .config_loader import config_loader
 
-# Apartment area (minimum 45m²)
-apartment_area_from = 45
-apartment_area_to = None
+# Search Type Configuration
+# 'buy' = buying apartments, 'rent' = renting apartments
+search_type = config_loader.get("SEARCH_TYPE", "buy")
 
-# Number of rooms (4-9 in system values = 2.0-4.5 rooms)
-number_of_rooms_from = '4'
-number_of_rooms_to = '9'
+# Cost in euros
+price_from = config_loader.get("PRICE_FROM", '110000')
+price_to = config_loader.get("PRICE_TO", '126000')
 
-# Floor (PR = prizemlje/ground floor minimum)
-floor_from = 'PR'
-floor_to = None
+# Apartment area in m²
+apartment_area_from = int(config_loader.get("APARTMENT_AREA_FROM", '45'))
+apartment_area_to = int(config_loader.get("APARTMENT_AREA_TO", '0')) if config_loader.get("APARTMENT_AREA_TO") else None
+
+# Number of rooms (4-9 equals 2.0-4.5 rooms)
+number_of_rooms_from = config_loader.get("NUMBER_OF_ROOMS_FROM", '4')
+number_of_rooms_to = config_loader.get("NUMBER_OF_ROOMS_TO", '9')
+
+# Floor (PR = prizemlje/ground floor minimum, empty = any floor)
+floor_from = config_loader.get("FLOOR_FROM", 'PR')
+floor_to = config_loader.get("FLOOR_TO") if config_loader.get("FLOOR_TO") else None
 
 cookies = {
     'ASP.NET_SessionId': 'ta3nxveegc5pj322ud3amy5t',
@@ -106,7 +112,7 @@ json_data = {
         {
             'FieldName': 'CategoryIds',
             'FieldValues': [
-                '1',  # Buy apartments
+                '1' if search_type == 'buy' else '13',  # 1=buy, 13=rent
             ],
         },
         {
@@ -119,9 +125,9 @@ json_data = {
     'HasValueQueries': [],
     'GeoPolygonQuery': {},
     'GeoCircleQuery': {},
-    'CategoryId': '1',
+    'CategoryId': '1' if search_type == 'buy' else '13',
     'SearchTypeIds': [
-        1,
+        1 if search_type == 'buy' else 2,  # 1=buy, 2=rent
     ],
     'SortFields': [
         {
@@ -135,7 +141,7 @@ json_data = {
     'IsGrid': False,
     'fetchBanners': False,
     'QuasiTaxonomy': '',
-    'BaseTaxonomy': '/nekretnine/prodaja-stanova',
+    'BaseTaxonomy': '/nekretnine/prodaja-stanova' if search_type == 'buy' else '/nekretnine/izdavanje-stanova',
     'RenderSEOWidget': True,
     'ExcludeFieldORQueries': [
         {
@@ -146,9 +152,6 @@ json_data = {
         },
     ],
 }
-
-# Import configuration loader for credentials
-from .config_loader import config_loader
 
 # Telegram Bot Configuration
 # These values are loaded from config.properties file or environment variables

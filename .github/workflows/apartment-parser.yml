@@ -31,6 +31,13 @@ jobs:
       run: |
         mkdir -p data logs
     
+    - name: Download previous apartment tracking data
+      uses: actions/download-artifact@v4
+      with:
+        name: apartment-tracking-data
+        path: data/
+      continue-on-error: true  # Allow first run when no previous data exists
+    
     - name: Run apartment parser
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -38,6 +45,14 @@ jobs:
       run: |
         cd scripts
         python run_search.py
+    
+    - name: Upload apartment tracking data for next run
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: apartment-tracking-data
+        path: data/previous_apartment_ids.json
+        retention-days: 90
     
     - name: Upload logs as artifacts
       if: always()

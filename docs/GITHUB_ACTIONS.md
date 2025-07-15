@@ -80,6 +80,27 @@ on:
     EXPORT_TO_EXCEL: true  # Enable Excel export
 ```
 
+## 🔄 Persistent Apartment Tracking
+
+The workflow automatically maintains apartment tracking between runs:
+
+### How It Works
+1. **Download previous data**: Each run downloads `previous_apartment_ids.json` from the last execution
+2. **Track new apartments**: Parser identifies NEW vs PREVIOUSLY SEEN apartments
+3. **Upload updated data**: Saves updated tracking file for the next run
+4. **90-day retention**: Tracking data is preserved for 3 months
+
+### Benefits
+- 🎯 **Only notifies about NEW apartments** (no duplicate Telegram messages)
+- 📈 **Continuous tracking** across all automated runs
+- 🔒 **No external storage needed** (uses GitHub's artifact system)
+- ⚡ **Fast startup** (no need to rebuild tracking from scratch)
+
+### First Run Behavior
+- On the very first run, no previous tracking data exists
+- All found apartments will be marked as "NEW"
+- Subsequent runs will only show truly new listings
+
 ## 📊 Monitoring
 
 ### View Execution Logs
@@ -92,6 +113,7 @@ on:
 Each run creates downloadable artifacts:
 - **parser-logs**: Contains all log files
 - **parser-data**: Contains apartment data and tracking files
+- **apartment-tracking-data**: Persistent ID tracking (auto-restored between runs)
 
 ### Check Run History
 - Green ✅: Successful execution

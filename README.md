@@ -210,6 +210,7 @@ The easiest way to run this automatically in the cloud using GitHub's free tier:
 - ✅ **Zero server costs** (GitHub free tier)
 - ✅ **No maintenance** required
 - ✅ **Built-in logging** and artifact storage
+- ✅ **Persistent tracking** - Remembers seen apartments between runs
 
 ### 4. Monitoring
 - **View runs**: Actions tab → HaloOglasi Apartment Parser

@@ -18,11 +18,14 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure Telegram Bot (Optional)
+### 2. Configure Credentials (Optional)
 ```bash
-# Edit src/halooglasi_parser/config.py and replace:
-TELEGRAM_BOT_TOKEN = "your_bot_token_here"  # Get from @BotFather
-TELEGRAM_CHAT_ID = "your_chat_id_here"      # Get from @userinfobot
+# Copy the template and add your credentials
+cp config.properties.template config.properties
+
+# Edit config.properties and replace:
+TELEGRAM_BOT_TOKEN=your_bot_token_here  # Get from @BotFather
+TELEGRAM_CHAT_ID=your_chat_id_here      # Get from @userinfobot
 ```
 
 ### 3. Run Options
@@ -53,8 +56,9 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Configure Telegram (edit config.py)
-nano src/halooglasi_parser/config.py
+# 3. Configure credentials  
+cp config.properties.template config.properties
+nano config.properties
 
 # 4. Start monitoring
 ./start_scheduler.sh

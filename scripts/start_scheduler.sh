@@ -22,16 +22,23 @@ if ! ./venv/bin/python -c "import schedule" 2>/dev/null; then
     ./venv/bin/pip install -r requirements.txt
 fi
 
+# Check for configuration file
+if [ ! -f "config.properties" ]; then
+    echo "⚠️  Warning: config.properties not found"
+    echo "   Copy config.properties.template to config.properties and update with your credentials"
+    echo ""
+fi
+
 # Check Telegram configuration
-if ! ./venv/bin/python -c "import sys; sys.path.append('src'); from halooglasi_parser.config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID; exit(0 if TELEGRAM_BOT_TOKEN != 'YOUR_BOT_TOKEN_HERE' and TELEGRAM_CHAT_ID != 'YOUR_CHAT_ID_HERE' else 1)" 2>/dev/null; then
+if ! ./venv/bin/python -c "import sys; sys.path.append('src'); from halooglasi_parser.config_loader import config_loader; exit(0 if config_loader.validate_telegram_config() else 1)" 2>/dev/null; then
     echo "⚠️  Warning: Telegram bot not configured"
-    echo "   Configure TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in src/halooglasi_parser/config.py for notifications"
+    echo "   Update TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in config.properties for notifications"
     echo ""
 fi
 
 echo "🚀 Starting apartment scheduler..."
 echo "📅 Schedule: Every 30 minutes from 8:00 AM to 8:00 PM"
-echo "📱 Telegram notifications: $(./venv/bin/python -c "import sys; sys.path.append('src'); from halooglasi_parser.config import TELEGRAM_BOT_TOKEN; print('✅ Enabled' if TELEGRAM_BOT_TOKEN != 'YOUR_BOT_TOKEN_HERE' else '❌ Not configured')")"
+echo "📱 Telegram notifications: $(./venv/bin/python -c "import sys; sys.path.append('src'); from halooglasi_parser.config_loader import config_loader; print('✅ Enabled' if config_loader.validate_telegram_config() else '❌ Not configured')")"
 echo "📝 Logs will be saved to: logs/apartment_scheduler.log"
 echo ""
 echo "🔄 Press Ctrl+C to stop the scheduler"

@@ -47,6 +47,7 @@ logs/
 # Credentials and sensitive information
 creds.json
 config_local.py
+config.properties
 .env
 .secrets
 

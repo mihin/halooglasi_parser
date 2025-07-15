@@ -147,10 +147,15 @@ json_data = {
     ],
 }
 
+# Import configuration loader for credentials
+from .config_loader import config_loader
+
 # Telegram Bot Configuration
+# These values are loaded from config.properties file or environment variables
 # To get these values:
 # 1. Create a bot with @BotFather on Telegram
-# 2. Get the bot token from @BotFather
+# 2. Get the bot token from @BotFather  
 # 3. Get your chat ID by messaging @userinfobot
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Replace with your bot token
-TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE"      # Replace with your chat ID
+# 4. Copy config.properties.template to config.properties and update values
+TELEGRAM_BOT_TOKEN = config_loader.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = config_loader.get("TELEGRAM_CHAT_ID")

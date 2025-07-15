@@ -4,6 +4,8 @@
 
 ## 🚀 Quick Start
 
+**Requirements**: Python 3.11+ (required for numpy 2.2+ compatibility)
+
 ### 1. Setup
 ```bash
 git clone https://github.com/shestakovitch/halooglasi_parser.git

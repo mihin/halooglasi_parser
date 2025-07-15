@@ -67,7 +67,7 @@ on:
 - name: Set up Python
   uses: actions/setup-python@v4
   with:
-    python-version: '3.11'  # or '3.8', '3.9', '3.10'
+    python-version: '3.11'  # Default: 3.11 (recommended for latest dependencies)
 ```
 
 ### Add Environment Variables
@@ -181,7 +181,7 @@ Run multiple configurations simultaneously:
 ```yaml
 strategy:
   matrix:
-    python-version: [3.9, 3.10, 3.11]
+    python-version: [3.10, 3.11, 3.12]
     search-criteria: [budget, premium, large]
 ```
 

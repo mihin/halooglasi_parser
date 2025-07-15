@@ -54,18 +54,11 @@ jobs:
         path: data/previous_apartment_ids.json
         retention-days: 90
     
-    - name: Upload logs as artifacts
+    - name: Clean up output files
       if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: parser-logs-${{ github.run_number }}
-        path: logs/
-        retention-days: 7
-    
-    - name: Upload data as artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: parser-data-${{ github.run_number }}
-        path: data/
-        retention-days: 30 
+      run: |
+        # Remove all generated files except previous_apartment_ids.json
+        rm -f data/halooglasi_data.json
+        rm -f data/halooglasi_data.xlsx
+        rm -f logs/*.log
+        echo "🧹 Cleaned up temporary output files" 

@@ -95,6 +95,7 @@ The workflow automatically maintains apartment tracking between runs:
 - 📈 **Continuous tracking** across all automated runs
 - 🔒 **No external storage needed** (uses GitHub's artifact system)
 - ⚡ **Fast startup** (no need to rebuild tracking from scratch)
+- 🧹 **Clean storage** (automatically removes temporary files after each run)
 
 ### First Run Behavior
 - On the very first run, no previous tracking data exists
@@ -110,10 +111,10 @@ The workflow automatically maintains apartment tracking between runs:
 4. Expand any step to see detailed logs
 
 ### Download Artifacts
-Each run creates downloadable artifacts:
-- **parser-logs**: Contains all log files
-- **parser-data**: Contains apartment data and tracking files
+Each run creates minimal artifacts:
 - **apartment-tracking-data**: Persistent ID tracking (auto-restored between runs)
+
+**Note**: Log files and data files are automatically cleaned up after each run to prevent storage accumulation. Only the apartment tracking file persists between runs.
 
 ### Check Run History
 - Green ✅: Successful execution

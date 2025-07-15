@@ -223,6 +223,7 @@ The easiest way to run this automatically in the cloud using GitHub's free tier:
 - 🔄 **Automatic updates** when you push changes
 - 📊 **Built-in monitoring** and alerting
 - 🚀 **One-time setup**, runs forever
+- 🧹 **Clean storage** - No file accumulation between runs
 
 ## 📋 Current Search Criteria
 

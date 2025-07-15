@@ -146,3 +146,11 @@ json_data = {
         },
     ],
 }
+
+# Telegram Bot Configuration
+# To get these values:
+# 1. Create a bot with @BotFather on Telegram
+# 2. Get the bot token from @BotFather
+# 3. Get your chat ID by messaging @userinfobot
+TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Replace with your bot token
+TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE"      # Replace with your chat ID

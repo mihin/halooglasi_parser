@@ -31,21 +31,22 @@ jobs:
       run: |
         mkdir -p data logs
     
-    - name: Download previous apartment tracking data
+    - name: Download previous apartment tracking data (may fail on first run)
       uses: actions/download-artifact@v4
       with:
         name: apartment-tracking-data
         path: data/
-      continue-on-error: true  # Allow first run when no previous data exists
+      continue-on-error: true  # Expected to fail on first run - this is normal
     
-    - name: Check if tracking file exists
+    - name: Initialize tracking file if needed
       run: |
         if [ ! -f "data/previous_apartment_ids.json" ]; then
-          echo "📝 First run detected - no previous tracking data found"
-          echo "All apartments will be marked as NEW in this run"
+          echo "📝 No previous tracking data (normal for first run)"
+          echo "Creating new tracking file - all apartments will be marked as NEW"
           echo '[]' > data/previous_apartment_ids.json
         else
           echo "✅ Previous tracking data loaded successfully"
+          echo "Will identify NEW vs EXISTING apartments"
         fi
     
     - name: Run apartment parser

@@ -98,13 +98,14 @@ The workflow automatically maintains apartment tracking between runs:
 - 🧹 **Clean storage** (automatically removes temporary files after each run)
 
 ### First Run Behavior
-- **Download step**: Fails gracefully with "Artifact not found" warning (this is normal)
-- **Auto-recovery**: Creates empty tracking file `[]` for first run
+- **Download step**: ❌ Shows RED ERROR "Artifact not found" (this is NORMAL - ignore it!)
+- **Continue**: Workflow continues despite the error (configured with `continue-on-error`)
+- **Auto-recovery**: Next step creates empty tracking file `[]` 
 - **Result**: All found apartments will be marked as "NEW" 
 - **Upload**: Creates initial tracking artifact for subsequent runs
-- **Subsequent runs**: Will only show truly new listings
+- **Subsequent runs**: ✅ Will download successfully and only show truly new listings
 
-**Note**: The "Unable to download artifact" warning on first run is expected and handled automatically.
+**IMPORTANT**: The red ❌ "Unable to download artifact(s): Artifact not found" error on first run is **completely expected**. The workflow will complete successfully. Just ignore this error!
 
 ## 📊 Monitoring
 
@@ -136,12 +137,14 @@ Configure GitHub to notify you of workflow failures:
 ### Common Issues
 
 #### 1. "Artifact not found: apartment-tracking-data"
-**Problem**: First run shows "Unable to download artifact" warning
+**Problem**: First run shows red ❌ "Unable to download artifact(s): Artifact not found" error
 **Solution**: 
-- ✅ This is **normal behavior** for the first run
-- The workflow automatically creates an empty tracking file
-- Subsequent runs will work normally
-- **No action needed** - the warning can be ignored
+- ✅ This is **100% NORMAL** for the first run - **IGNORE THIS ERROR**
+- The step is configured with `continue-on-error: true` 
+- The next step automatically creates an empty tracking file
+- The workflow will complete successfully despite this "error"
+- Subsequent runs will work without this error
+- **No action needed** - this is expected first-run behavior
 
 #### 2. "Invalid secrets"
 **Problem**: Telegram credentials not working

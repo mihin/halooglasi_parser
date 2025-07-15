@@ -1,0 +1,56 @@
+name: HaloOglasi Apartment Parser
+
+on:
+  schedule:
+    # Run every 30 minutes from 8:00 AM to 8:00 PM UTC
+    # This covers 8am-8pm in most European timezones
+    - cron: '0,30 8-20 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  parse-apartments:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create data and logs directories
+      run: |
+        mkdir -p data logs
+    
+    - name: Run apartment parser
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        cd scripts
+        python run_search.py
+    
+    - name: Upload logs as artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: parser-logs-${{ github.run_number }}
+        path: logs/
+        retention-days: 7
+    
+    - name: Upload data as artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: parser-data-${{ github.run_number }}
+        path: data/
+        retention-days: 30 

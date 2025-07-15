@@ -189,6 +189,38 @@ tail -f apartment_scheduler.log
 # Press Ctrl+C in scheduler terminal
 ```
 
+## ☁️ GitHub Actions Deployment (Recommended)
+
+The easiest way to run this automatically in the cloud using GitHub's free tier:
+
+### 1. Setup Repository
+1. **Fork this repository** to your GitHub account
+2. **Enable Actions**: Go to Actions tab → Enable workflows
+
+### 2. Configure Secrets
+1. Go to **Settings** → **Secrets and variables** → **Actions**
+2. Add repository secrets:
+   - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
+   - `TELEGRAM_CHAT_ID`: Your Telegram chat ID
+
+### 3. Automatic Execution
+- ✅ **Runs every 30 minutes** from 8am-8pm UTC daily
+- ✅ **Zero server costs** (GitHub free tier)
+- ✅ **No maintenance** required
+- ✅ **Built-in logging** and artifact storage
+
+### 4. Monitoring
+- **View runs**: Actions tab → HaloOglasi Apartment Parser
+- **Manual trigger**: Run workflow button
+- **Download logs**: Artifacts section in each run
+- **Check status**: Green ✅ = success, Red ❌ = failed
+
+### 5. Benefits
+- 🆓 **Free hosting** on GitHub infrastructure
+- 🔄 **Automatic updates** when you push changes
+- 📊 **Built-in monitoring** and alerting
+- 🚀 **One-time setup**, runs forever
+
 ## 📋 Current Search Criteria
 
 - **Type**: Apartments for purchase (not rent)

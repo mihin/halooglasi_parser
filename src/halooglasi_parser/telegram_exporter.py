@@ -24,50 +24,49 @@ def send_telegram_message(bot_token, chat_id, message, parse_mode="HTML"):
 
 
 def format_apartment_for_telegram(apartment):
-    """Format apartment data for Telegram message"""
+    """Format apartment data for Telegram message - matches console output order"""
     price = format_price(apartment['price'])
     
-    # Build apartment details
-    details = []
-    if apartment['area'] != "N/A":
-        details.append(apartment['area'])
-    if apartment['rooms'] != "N/A":
-        details.append(apartment['rooms'])
-    if apartment['price_per_m2'] != "N/A":
-        details.append(apartment['price_per_m2'])
+    # Match console output order exactly:
+    # 1. Title, Price, Price/m²
+    # 2. Location  
+    # 3. Link
+    # 4. All other details (features)
+    # 5. Description
+    # 6. Agent info at the end
     
-    details_str = " • ".join(details) if details else "Details not available"
+    message_parts = []
     
-    # Add additional details if available
-    additional_info = []
+    # 1. Title, Price, Price/m² 
+    message_parts.append(f"🆕 <b>NEW APARTMENT!</b>")
+    message_parts.append(f"📝 <b>{apartment['title']}</b>")
+    message_parts.append(f"💰 <b>{price} • {apartment['price_per_m2']}</b> 🆕")
+    
+    # 2. Location
     if apartment['subtitle_places'] != "N/A":
-        additional_info.append(f"🏘️ <b>Area:</b> {apartment['subtitle_places']}")
-    if apartment['price_by_surface'] != "N/A":
-        additional_info.append(f"💶 <b>Price Info:</b> {apartment['price_by_surface']}")
+        message_parts.append(f"🏘️ {apartment['subtitle_places']}")
+    
+    # 3. Link
+    message_parts.append(f"🔗 <a href=\"{apartment['link']}\">View on HaloOglasi</a>")
+    
+    # 4. All other details (features)
     if apartment['product_features'] != "N/A":
-        additional_info.append(f"🏠 <b>Features:</b> {apartment['product_features']}")
-    if apartment['description'] != "N/A" and len(apartment['description']) < 200:
-        additional_info.append(f"📋 <b>Description:</b> {apartment['description']}")
+        # Remove "Kvadratura" from product features - same as console
+        features_clean = apartment['product_features'].replace('Kvadratura', '').replace('  ', ' ').strip()
+        message_parts.append(f"🏠 {features_clean}")
     
-    additional_text = "\n".join(additional_info)
-    if additional_text:
-        additional_text = "\n\n" + additional_text
+    # 5. Description
+    if apartment['description'] != "N/A":
+        # Truncate long descriptions for Telegram
+        description = apartment['description']
+        if len(description) > 200:
+            description = description[:200] + "..."
+        message_parts.append(f"📋 {description}")
     
-    # Format message with HTML
-    message = f"""🆕 <b>NEW APARTMENT FOUND!</b>
+    # 6. Agent info at the end
+    message_parts.append(f"👤 {apartment['agent_type']} • {apartment['image_count']}")
     
-💰 <b>{price}</b>
-📍 <b>Location:</b> {apartment['location']}
-📐 <b>Details:</b> {details_str}
-👤 <b>Agent:</b> {apartment['agent_type']}
-📷 <b>Photos:</b> {apartment['image_count']}
-📅 <b>Published:</b> {apartment['publish_date_str']}{additional_text}
-
-📝 <b>Title:</b> {apartment['title']}
-
-🔗 <a href="{apartment['link']}">View on HaloOglasi</a>"""
-    
-    return message
+    return "\n".join(message_parts)
 
 
 def format_price(price):

@@ -38,6 +38,16 @@ jobs:
         path: data/
       continue-on-error: true  # Allow first run when no previous data exists
     
+    - name: Check if tracking file exists
+      run: |
+        if [ ! -f "data/previous_apartment_ids.json" ]; then
+          echo "📝 First run detected - no previous tracking data found"
+          echo "All apartments will be marked as NEW in this run"
+          echo '[]' > data/previous_apartment_ids.json
+        else
+          echo "✅ Previous tracking data loaded successfully"
+        fi
+    
     - name: Run apartment parser
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -45,6 +55,15 @@ jobs:
       run: |
         cd scripts
         python run_search.py
+    
+    - name: Ensure tracking file exists before upload
+      if: always()
+      run: |
+        if [ ! -f "data/previous_apartment_ids.json" ]; then
+          echo "⚠️ Tracking file missing, creating empty one"
+          echo '[]' > data/previous_apartment_ids.json
+        fi
+        echo "📁 Tracking file ready for upload"
     
     - name: Upload apartment tracking data for next run
       if: always()

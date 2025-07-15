@@ -98,9 +98,13 @@ The workflow automatically maintains apartment tracking between runs:
 - 🧹 **Clean storage** (automatically removes temporary files after each run)
 
 ### First Run Behavior
-- On the very first run, no previous tracking data exists
-- All found apartments will be marked as "NEW"
-- Subsequent runs will only show truly new listings
+- **Download step**: Fails gracefully with "Artifact not found" warning (this is normal)
+- **Auto-recovery**: Creates empty tracking file `[]` for first run
+- **Result**: All found apartments will be marked as "NEW" 
+- **Upload**: Creates initial tracking artifact for subsequent runs
+- **Subsequent runs**: Will only show truly new listings
+
+**Note**: The "Unable to download artifact" warning on first run is expected and handled automatically.
 
 ## 📊 Monitoring
 
@@ -131,26 +135,34 @@ Configure GitHub to notify you of workflow failures:
 
 ### Common Issues
 
-#### 1. "Invalid secrets"
+#### 1. "Artifact not found: apartment-tracking-data"
+**Problem**: First run shows "Unable to download artifact" warning
+**Solution**: 
+- ✅ This is **normal behavior** for the first run
+- The workflow automatically creates an empty tracking file
+- Subsequent runs will work normally
+- **No action needed** - the warning can be ignored
+
+#### 2. "Invalid secrets"
 **Problem**: Telegram credentials not working
 **Solution**: 
 - Verify `TELEGRAM_BOT_TOKEN` is correct
 - Ensure `TELEGRAM_CHAT_ID` has correct format
 - Test credentials locally first
 
-#### 2. "Workflow disabled"
+#### 3. "Workflow disabled"
 **Problem**: Actions not running automatically
 **Solution**:
 - Go to Actions tab → Enable workflows
 - Check if repository is public (private repos have usage limits)
 
-#### 3. "Rate limiting" 
+#### 4. "Rate limiting" 
 **Problem**: Too many API requests
 **Solution**:
 - Reduce schedule frequency (e.g., every hour instead of 30 minutes)
 - The parser already includes rate limiting for Telegram
 
-#### 4. "Quota exceeded"
+#### 5. "Quota exceeded"
 **Problem**: GitHub Actions minutes limit reached
 **Solution**:
 - Public repositories have unlimited minutes

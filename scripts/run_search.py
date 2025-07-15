@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from halooglasi_parser.config import base_url, cookies, headers, json_data, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from halooglasi_parser.config_loader import config_loader
 from halooglasi_parser.scraper import fetch_data
 from halooglasi_parser.parser import get_info
 from halooglasi_parser.exporter import save_to_gs, save_to_excel, display_apartments_to_console
@@ -33,6 +34,9 @@ def main():
     print(f"  - Legal status: {json_data['FieldORQueries'][1]['FieldValues'][0]} (12000004)")
     print(f"  - Location areas: {len(json_data['MultiFieldORQueries'][0]['FieldValues'])} Belgrade areas")
     print(f"  - Date filter: Results from last {MAX_DAYS_OLD} days only")
+    
+    # Show configuration sources
+    config_loader.print_config_summary()
     
     # Load previously seen apartment IDs
     print("\n📋 Loading previous apartment IDs...")

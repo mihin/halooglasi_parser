@@ -37,13 +37,14 @@ class ConfigLoader:
         Get configuration value by key.
         
         Priority order:
-        1. Environment variable
+        1. Environment variable (highest priority)
         2. Properties file
-        3. Default value
+        3. Default value (lowest priority)
         """
-        # Try environment variable first
+        # Try environment variable first (highest priority)
         env_value = os.environ.get(key)
         if env_value:
+            print(f"🔧 Using environment variable for {key}")
             return env_value
         
         # Try properties file
@@ -95,6 +96,44 @@ class ConfigLoader:
         """Validate that Telegram configuration is properly set."""
         return (self.is_configured('TELEGRAM_BOT_TOKEN') and 
                 self.is_configured('TELEGRAM_CHAT_ID'))
+    
+    def get_config_source(self, key: str) -> str:
+        """Get the source of a configuration value (env, file, or default)."""
+        # Check environment variable
+        if os.environ.get(key):
+            return "environment"
+        
+        # Check properties file
+        try:
+            self.config.get('DEFAULT', key)
+            return "properties_file"
+        except (configparser.NoOptionError, configparser.NoSectionError):
+            pass
+        
+        return "default"
+    
+    def print_config_summary(self):
+        """Print a summary of where configuration values are loaded from."""
+        important_keys = ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']
+        
+        print("\n🔧 Configuration Sources:")
+        print("=" * 50)
+        
+        for key in important_keys:
+            source = self.get_config_source(key)
+            is_configured = self.is_configured(key)
+            
+            if source == "environment":
+                status = "✅ Environment Variable"
+            elif source == "properties_file":
+                status = "📄 Properties File"
+            else:
+                status = "⚠️  Default/Placeholder"
+            
+            config_status = "✅ Configured" if is_configured else "❌ Not Set"
+            print(f"  {key:20} | {status:20} | {config_status}")
+        
+        print("=" * 50)
 
 
 # Global config loader instance

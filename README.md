@@ -19,6 +19,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. Configure Credentials (Optional)
+
+**Option A: Properties File (Recommended for local development)**
 ```bash
 # Copy the template and add your credentials
 cp config.properties.template config.properties
@@ -26,6 +28,16 @@ cp config.properties.template config.properties
 # Edit config.properties and replace:
 TELEGRAM_BOT_TOKEN=your_bot_token_here  # Get from @BotFather
 TELEGRAM_CHAT_ID=your_chat_id_here      # Get from @userinfobot
+```
+
+**Option B: Environment Variables (Recommended for production/containers)**
+```bash
+# Set environment variables (highest priority)
+export TELEGRAM_BOT_TOKEN="your_bot_token_here"
+export TELEGRAM_CHAT_ID="your_chat_id_here"
+
+# Test configuration
+make test-env
 ```
 
 ### 3. Run Options
@@ -69,7 +81,7 @@ nano config.properties
 # Create service file
 sudo nano /etc/systemd/system/halooglasi.service
 
-# Add content:
+# Add content (with environment variables):
 [Unit]
 Description=HaloOglasi Apartment Parser
 After=network.target
@@ -78,7 +90,9 @@ After=network.target
 Type=simple
 User=your_username
 WorkingDirectory=/path/to/halooglasi_parser
-ExecStart=/path/to/halooglasi_parser/venv/bin/python scheduler.py
+Environment=TELEGRAM_BOT_TOKEN=your_actual_token_here
+Environment=TELEGRAM_CHAT_ID=your_actual_chat_id_here
+ExecStart=/path/to/halooglasi_parser/venv/bin/python scripts/scheduler.py
 Restart=always
 RestartSec=10
 

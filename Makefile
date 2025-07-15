@@ -1,4 +1,4 @@
-.PHONY: help install test run schedule clean setup
+.PHONY: help install test run schedule clean setup test-env
 
 help:
 	@echo "HaloOglasi Parser - Available Commands:"
@@ -6,6 +6,7 @@ help:
 	@echo "  setup     - Set up virtual environment and install dependencies"
 	@echo "  install   - Install package in development mode"
 	@echo "  test      - Run tests"
+	@echo "  test-env  - Test environment variable configuration"
 	@echo "  run       - Run apartment search"
 	@echo "  schedule  - Start the scheduler"
 	@echo "  clean     - Clean up build artifacts and cache files"
@@ -21,6 +22,9 @@ install:
 
 test:
 	venv/bin/python -m pytest tests/ -v
+
+test-env:
+	venv/bin/python scripts/test_env_config.py
 
 run:
 	venv/bin/python scripts/run_search.py

@@ -212,7 +212,7 @@ Add Slack notifications:
 ### Caching Dependencies
 ```yaml
 - name: Cache Python dependencies
-  uses: actions/cache@v3
+  uses: actions/cache@v4
   with:
     path: ~/.cache/pip
     key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}

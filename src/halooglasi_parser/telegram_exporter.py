@@ -203,7 +203,7 @@ def send_telegram_message(bot_token, chat_id, message, parse_mode="HTML"):
         return False
 
 
-def format_apartment_for_telegram(apartment):
+def format_apartment_for_telegram(apartment, is_debug=False):
     """Format apartment data for Telegram message - matches console output order"""
     price = format_price(apartment['price'])
     
@@ -217,9 +217,15 @@ def format_apartment_for_telegram(apartment):
     
     message_parts = []
     
+    # Add DEBUG marker if this is a debug message
+    if is_debug:
+        message_parts.append("🔍 <b>DEBUG</b> - Most recent listing (no new apartments found)")
+        message_parts.append("")  # Empty line for separation
+    
     # 1. Title, Price, Price/m² 
     message_parts.append(f"📝 <b>{apartment['title']}</b>")
-    message_parts.append(f"💰 <b>{price} • {apartment['price_per_m2']}</b> 🆕")
+    debug_marker = "" if is_debug else " 🆕"
+    message_parts.append(f"💰 <b>{price} • {apartment['price_per_m2']}</b>{debug_marker}")
     
     # 2. Location
     if apartment['subtitle_places'] != "N/A":
@@ -245,6 +251,10 @@ def format_apartment_for_telegram(apartment):
     # 6. Agent info at the end
     message_parts.append(f"👤 {apartment['agent_type']} • {apartment['image_count']}")
     
+    if is_debug:
+        message_parts.append("")  # Empty line for separation
+        message_parts.append("ℹ️ This is a debug message showing the most recent apartment found.")
+    
     return "\n".join(message_parts)
 
 
@@ -268,12 +278,14 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
     # Determine which chat IDs to use
     chat_ids = set()
     
-    # If TELEGRAM_CHAT_ID is configured and not the default, use only that one
-    if configured_chat_id and configured_chat_id != "YOUR_CHAT_ID_HERE":
+    # If TELEGRAM_CHAT_ID is explicitly configured, use ONLY that one (disable auto-discovery)
+    if configured_chat_id and configured_chat_id not in ["YOUR_CHAT_ID_HERE", "", None]:
         chat_ids.add(configured_chat_id)
-        print(f"📱 Using configured TELEGRAM_CHAT_ID: {configured_chat_id}")
+        print(f"📱 EXCLUSIVE MODE: Using only configured TELEGRAM_CHAT_ID: {configured_chat_id}")
+        print(f"📱 Auto-discovery disabled - bot will ONLY send to this chat")
     else:
-        # Load existing chat IDs from file
+        # Auto-discovery mode: Load existing chat IDs from file and discover new ones
+        print(f"📱 AUTO-DISCOVERY MODE: TELEGRAM_CHAT_ID not set, discovering active chats")
         chat_ids = load_chat_ids()
         
         # Discover new chat IDs using both methods
@@ -293,7 +305,7 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
         
         if not chat_ids:
             print("❌ No chat IDs available. Please:")
-            print("   1. Set TELEGRAM_CHAT_ID in config.py, OR")
+            print("   1. Set TELEGRAM_CHAT_ID in config.py for exclusive mode, OR")
             print("   2. Send a message to your bot to discover chat IDs automatically")
             return
     
@@ -333,6 +345,40 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
             chat_ids = remove_chat_id(chat_id, chat_ids)
     
     print(f"\n📱 Telegram export complete: {total_success_count} total messages sent to {len(chat_ids)} active chats")
+
+
+def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
+    """Send the most recent apartment as a debug message to the specified chat ID"""
+    if not apartments_list:
+        print("📱 No apartments available for debug message")
+        return
+    
+    if bot_token == "YOUR_BOT_TOKEN_HERE":
+        print("❌ Please configure TELEGRAM_BOT_TOKEN in config.py")
+        return
+    
+    if not debug_chat_id or debug_chat_id == "YOUR_CHAT_ID_HERE" or debug_chat_id == "":
+        print("📱 DEBUG_CHAT not configured, skipping debug message")
+        return
+    
+    # Get the most recent apartment (first in the list, as they're usually sorted by date)
+    most_recent_apartment = apartments_list[0]
+    
+    print(f"\n🔍 Sending DEBUG message to chat ID: {debug_chat_id}")
+    print(f"🔍 Debug apartment: {most_recent_apartment['title'][:50]}...")
+    
+    # Format the apartment with debug flag
+    debug_message = format_apartment_for_telegram(most_recent_apartment, is_debug=True)
+    
+    # Send the debug message
+    result = send_telegram_message(bot_token, debug_chat_id, debug_message)
+    
+    if result is True:
+        print(f"✅ DEBUG message sent successfully to chat {debug_chat_id}")
+    elif result == "REMOVE_CHAT_ID":
+        print(f"🚫 DEBUG chat {debug_chat_id} has issues (bot blocked, chat not found, etc.)")
+    else:
+        print(f"❌ Failed to send DEBUG message to chat {debug_chat_id}")
 
 
  

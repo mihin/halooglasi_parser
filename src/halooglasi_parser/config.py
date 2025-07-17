@@ -252,3 +252,8 @@ json_data = {
 # 4. Copy config.properties.template to config.properties and update values
 TELEGRAM_BOT_TOKEN = config_loader.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = config_loader.get("TELEGRAM_CHAT_ID")
+
+# Debug Configuration
+# Forces sending the most recent listing to specified chat ID when no new listings are found
+# Useful for testing/monitoring that the bot is working even when no new apartments
+DEBUG_CHAT = config_loader.get("DEBUG_CHAT")

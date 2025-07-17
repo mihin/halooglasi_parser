@@ -2,13 +2,13 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from halooglasi_parser.config import base_url, cookies, headers, json_data, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from halooglasi_parser.config import base_url, cookies, headers, json_data, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, DEBUG_CHAT
 from halooglasi_parser.config_loader import config_loader
 from halooglasi_parser.scraper import fetch_data
 from halooglasi_parser.parser import get_info
 from halooglasi_parser.exporter import save_to_gs, save_to_excel, display_apartments_to_console
 from halooglasi_parser.id_manager import load_previous_ids, save_current_ids, get_new_apartments, get_all_ids_from_apartments
-from halooglasi_parser.telegram_exporter import send_new_apartments_to_telegram
+from halooglasi_parser.telegram_exporter import send_new_apartments_to_telegram, send_debug_apartment_to_telegram
 
 # Configuration: Number of days to include in results (older results will be filtered out)
 MAX_DAYS_OLD = 2
@@ -86,7 +86,16 @@ def main():
 
     # Export new apartments to Telegram
     if EXPORT_TO_TELEGRAM:
-        send_new_apartments_to_telegram(new_apartments, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+        if new_apartments:
+            # Send new apartments normally
+            send_new_apartments_to_telegram(new_apartments, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+        else:
+            # No new apartments found, check if debug mode is enabled
+            if DEBUG_CHAT and DEBUG_CHAT not in ["YOUR_CHAT_ID_HERE", ""]:
+                print(f"\n🔍 No new apartments found, sending DEBUG message to {DEBUG_CHAT}")
+                send_debug_apartment_to_telegram(apartments_list, TELEGRAM_BOT_TOKEN, DEBUG_CHAT)
+            else:
+                print(f"📱 No new apartments to send to Telegram")
     else:
         print(f"📱 Telegram export disabled (set EXPORT_TO_TELEGRAM=True to enable)")
 

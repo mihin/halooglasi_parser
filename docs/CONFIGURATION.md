@@ -38,6 +38,9 @@ TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNOPqrsTUVwxyz
 
 # Get from @userinfobot on Telegram  
 TELEGRAM_CHAT_ID=-1001234567890
+
+# Optional: Forces debug messages when no new listings found
+DEBUG_CHAT=-1001234567891
 ```
 
 ### 3. Verify Configuration
@@ -83,7 +86,12 @@ python scripts/run_search.py
 
 ### Current Credentials
 - `TELEGRAM_BOT_TOKEN` - Bot token from @BotFather
-- `TELEGRAM_CHAT_ID` - Chat ID from @userinfobot
+- `TELEGRAM_CHAT_ID` - Optional: Specific chat ID for **EXCLUSIVE MODE** (disables bot for other users)
+- `DEBUG_CHAT` - Optional debug chat ID that forces sending most recent listing when no new listings found
+
+> **⚠️ IMPORTANT**: Setting `TELEGRAM_CHAT_ID` enables **EXCLUSIVE MODE** - the bot will ONLY serve that specific chat and will be disabled for all other users.
+
+> **💡 Tip**: For multi-user bot setup, leave `TELEGRAM_CHAT_ID` unset to enable auto-discovery mode.
 
 ### Future Extensibility
 The system is designed to easily add new credentials:

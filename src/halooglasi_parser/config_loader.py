@@ -92,6 +92,11 @@ class ConfigLoader:
         value = self.get(key)
         return value and not value.startswith("YOUR_") and not value.endswith("_HERE")
     
+    def is_exclusive_chat_mode(self) -> bool:
+        """Check if TELEGRAM_CHAT_ID is configured for exclusive mode (disables auto-discovery)."""
+        chat_id = self.get('TELEGRAM_CHAT_ID')
+        return chat_id and chat_id not in ["YOUR_CHAT_ID_HERE", "", None]
+    
     def validate_telegram_config(self) -> bool:
         """Validate that Telegram configuration is properly set."""
         return (self.is_configured('TELEGRAM_BOT_TOKEN') and 

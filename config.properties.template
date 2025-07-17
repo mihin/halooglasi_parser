@@ -6,8 +6,20 @@
 # Get your bot token from @BotFather on Telegram
 TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 
-# Get your chat ID from @userinfobot on Telegram  
+# Chat ID Configuration (Choose ONE option):
+# 
+# OPTION 1: AUTO-DISCOVERY MODE (Recommended for multi-user bots)
+# Leave as default - bot auto-discovers all active chats
 TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
+#
+# OPTION 2: EXCLUSIVE MODE (Single user/chat only)
+# Set specific chat ID - DISABLES bot for all other users
+# TELEGRAM_CHAT_ID=your_specific_chat_id_here
+
+# Debug Chat ID (Optional)
+# Forces sending the most recent listing to this chat ID when no new listings are found
+# Use for testing/monitoring that the bot is working even when no new apartments
+# DEBUG_CHAT=YOUR_DEBUG_CHAT_ID_HERE
 
 # Search Configuration (Optional - defaults provided)
 # Search type: 'buy' for purchasing apartments, 'rent' for renting apartments  

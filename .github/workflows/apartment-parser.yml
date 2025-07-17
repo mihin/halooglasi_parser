@@ -31,10 +31,12 @@ jobs:
     
     - name: Download previous apartment tracking data
       id: download-tracking-data
-      uses: actions/download-artifact@v4
+      uses: dawidd6/action-download-artifact@v3
       with:
         name: apartment-ids
         path: data/
+        workflow: apartment-parser.yml
+        if_no_artifact_found: warn
       continue-on-error: true
       
     - name: Debug artifact download
@@ -92,10 +94,12 @@ jobs:
         
     - name: Restore chat state (Auto-discovery mode only)
       id: restore-chat
-      uses: actions/download-artifact@v4
+      uses: dawidd6/action-download-artifact@v3
       with:
         name: chat-ids
         path: data/
+        workflow: apartment-parser.yml
+        if_no_artifact_found: warn
       continue-on-error: true
       
     - name: Initialize chat state file

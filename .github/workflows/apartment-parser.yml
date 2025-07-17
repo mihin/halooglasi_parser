@@ -81,7 +81,7 @@ jobs:
         
     - name: Restore chat state (Auto-discovery mode only)
       id: restore-chat
-      if: ${{ secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
+      if: ${{ !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
       uses: actions/download-artifact@v4
       with:
         name: chat-ids
@@ -89,7 +89,7 @@ jobs:
       continue-on-error: true
       
     - name: Initialize chat state file
-      if: ${{ secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
+      if: ${{ !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
       run: |
         if [ ! -f data/chat-ids.txt ]; then
           echo "🔄 First run or no previous chat state found"
@@ -183,7 +183,7 @@ jobs:
         retention-days: 90
         
     - name: Upload chat state
-      if: ${{ always() && secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
+      if: ${{ always() && !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
       uses: actions/upload-artifact@v4
       with:
         name: chat-ids

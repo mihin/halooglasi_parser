@@ -81,7 +81,6 @@ jobs:
         
     - name: Restore chat state (Auto-discovery mode only)
       id: restore-chat
-      if: ${{ !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
       uses: actions/download-artifact@v4
       with:
         name: chat-ids
@@ -89,18 +88,22 @@ jobs:
       continue-on-error: true
       
     - name: Initialize chat state file
-      if: ${{ !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
       run: |
+        # Only initialize chat state in auto-discovery mode
+        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
         if [ ! -f data/chat-ids.txt ]; then
           echo "🔄 First run or no previous chat state found"
           echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
           echo "# Lines starting with # are comments" >> data/chat-ids.txt
           echo "" >> data/chat-ids.txt
           echo "✅ Initialized empty data/chat-ids.txt"
+                  else
+            echo "✅ Restored previous chat state"
+            echo "📋 Current chat IDs:"
+            grep -v '^#' data/chat-ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+          fi
         else
-          echo "✅ Restored previous chat state"
-          echo "📋 Current chat IDs:"
-          grep -v '^#' data/chat-ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+          echo "🔍 Skipping chat state initialization - not in auto-discovery mode"
         fi
         
     - name: Run apartment search
@@ -183,12 +186,13 @@ jobs:
         retention-days: 90
         
     - name: Upload chat state
-      if: ${{ always() && !secrets.DEBUG_CHAT && !secrets.TELEGRAM_CHAT_ID }}
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: chat-ids
         path: data/chat-ids.txt
         retention-days: 90
+      continue-on-error: true
         
     - name: Clean up output files
       if: always()

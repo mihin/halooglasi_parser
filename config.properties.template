@@ -9,10 +9,10 @@ TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 # Chat ID Configuration (Choose ONE option):
 # 
 # OPTION 1: AUTO-DISCOVERY MODE (Recommended for multi-user bots)
-# Leave as default - bot auto-discovers all active chats
-TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
+# Leave commented out - bot auto-discovers all active chats
+# TELEGRAM_CHAT_ID=YOUR_CHAT_ID_HERE
 #
-# OPTION 2: EXCLUSIVE MODE (Single user/chat only)
+# OPTION 2: EXCLUSIVE MODE (Single user/chat only)  
 # Set specific chat ID - DISABLES bot for all other users
 # TELEGRAM_CHAT_ID=your_specific_chat_id_here
 

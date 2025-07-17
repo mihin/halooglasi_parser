@@ -44,7 +44,10 @@ def main():
     print(f"  - DEBUG_CHAT type: {type(DEBUG_CHAT)}")
     print(f"  - DEBUG_CHAT is None: {DEBUG_CHAT is None}")
     print(f"  - DEBUG_CHAT is empty string: {DEBUG_CHAT == ''}")
-    debug_chat_configured = DEBUG_CHAT and DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "", None]
+    debug_chat_configured = (DEBUG_CHAT and 
+                             DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE", "", None] and
+                             not DEBUG_CHAT.startswith("YOUR_") and
+                             not DEBUG_CHAT.endswith("_HERE"))
     print(f"  - DEBUG_CHAT configured: {debug_chat_configured}")
     
     # Load previously seen apartment IDs
@@ -85,7 +88,9 @@ def main():
             # Check if DEBUG_CHAT is properly configured (not empty, None, or placeholder)
             debug_configured = (DEBUG_CHAT and 
                               DEBUG_CHAT.strip() != "" and 
-                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE"] and
+                              not DEBUG_CHAT.startswith("YOUR_") and
+                              not DEBUG_CHAT.endswith("_HERE"))
             
             if debug_configured:
                 print(f"🔍 DEBUG_CHAT configured - attempting to send DEBUG message to {DEBUG_CHAT}")
@@ -133,7 +138,9 @@ def main():
             # Check if DEBUG_CHAT is properly configured (not empty, None, or placeholder)
             debug_configured = (DEBUG_CHAT and 
                               DEBUG_CHAT.strip() != "" and 
-                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE"] and
+                              not DEBUG_CHAT.startswith("YOUR_") and
+                              not DEBUG_CHAT.endswith("_HERE"))
             
             if debug_configured:
                 print(f"🔍 DEBUG_CHAT configured - sending DEBUG message to {DEBUG_CHAT}")

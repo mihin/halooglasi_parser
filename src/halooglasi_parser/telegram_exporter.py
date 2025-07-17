@@ -279,7 +279,10 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
     chat_ids = set()
     
     # If TELEGRAM_CHAT_ID is explicitly configured, use ONLY that one (disable auto-discovery)
-    if configured_chat_id and configured_chat_id not in ["YOUR_CHAT_ID_HERE", "", None]:
+    if (configured_chat_id and 
+        configured_chat_id not in ["YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE", "", None] and
+        not configured_chat_id.startswith("YOUR_") and
+        not configured_chat_id.endswith("_HERE")):
         chat_ids.add(configured_chat_id)
         print(f"📱 EXCLUSIVE MODE: Using only configured TELEGRAM_CHAT_ID: {configured_chat_id}")
         print(f"📱 Auto-discovery disabled - bot will ONLY send to this chat")
@@ -360,7 +363,9 @@ def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
     # Check if DEBUG_CHAT is properly configured
     debug_configured = (debug_chat_id and 
                        debug_chat_id.strip() != "" and 
-                       debug_chat_id not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+                       debug_chat_id not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE"] and
+        not debug_chat_id.startswith("YOUR_") and
+        not debug_chat_id.endswith("_HERE"))
     
     if not debug_configured:
         print("📱 DEBUG_CHAT not configured, skipping debug message")

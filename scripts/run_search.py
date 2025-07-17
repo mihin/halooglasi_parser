@@ -38,6 +38,15 @@ def main():
     # Show configuration sources
     config_loader.print_config_summary()
     
+    # Debug: Show DEBUG_CHAT configuration
+    print(f"\n🔍 DEBUG_CHAT Configuration:")
+    print(f"  - DEBUG_CHAT value: '{DEBUG_CHAT}'")
+    print(f"  - DEBUG_CHAT type: {type(DEBUG_CHAT)}")
+    print(f"  - DEBUG_CHAT is None: {DEBUG_CHAT is None}")
+    print(f"  - DEBUG_CHAT is empty string: {DEBUG_CHAT == ''}")
+    debug_chat_configured = DEBUG_CHAT and DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "", None]
+    print(f"  - DEBUG_CHAT configured: {debug_chat_configured}")
+    
     # Load previously seen apartment IDs
     print("\n📋 Loading previous apartment IDs...")
     previous_ids = load_previous_ids()
@@ -67,6 +76,33 @@ def main():
     if filtered_count == 0:
         print(f"\n⚠️  No apartments found within the last {MAX_DAYS_OLD} days.")
         print("Try increasing MAX_DAYS_OLD in run_search.py or check if there are new listings.")
+        
+        # Check if DEBUG_CHAT is configured to send debug message with most recent apartment
+        if EXPORT_TO_TELEGRAM:
+            print(f"\n📱 No apartments found - checking DEBUG_CHAT configuration...")
+            print(f"🔍 DEBUG_CHAT value: '{DEBUG_CHAT}'")
+            
+            # Check if DEBUG_CHAT is properly configured (not empty, None, or placeholder)
+            debug_configured = (DEBUG_CHAT and 
+                              DEBUG_CHAT.strip() != "" and 
+                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+            
+            if debug_configured:
+                print(f"🔍 DEBUG_CHAT configured - attempting to send DEBUG message to {DEBUG_CHAT}")
+                # We need to get some apartments for debug, so let's expand the date range temporarily
+                print(f"🔍 Fetching recent apartments for debug message (expanding to 7 days)...")
+                debug_data = get_info(apartments_data, base_url, max_days_old=7)
+                debug_apartments_list = list(debug_data)
+                
+                if debug_apartments_list:
+                    print(f"🔍 Found {len(debug_apartments_list)} recent apartments for debug")
+                    send_debug_apartment_to_telegram(debug_apartments_list, TELEGRAM_BOT_TOKEN, DEBUG_CHAT)
+                else:
+                    print(f"🔍 No recent apartments found even with expanded range for debug message")
+            else:
+                print(f"🔍 DEBUG_CHAT not configured or empty - skipping debug message")
+                print(f"📱 To enable debug messages, set DEBUG_CHAT environment variable to your chat ID")
+        
         return
 
     # Separate new and existing apartments
@@ -91,11 +127,20 @@ def main():
             send_new_apartments_to_telegram(new_apartments, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
         else:
             # No new apartments found, check if debug mode is enabled
-            if DEBUG_CHAT and DEBUG_CHAT not in ["YOUR_CHAT_ID_HERE", ""]:
-                print(f"\n🔍 No new apartments found, sending DEBUG message to {DEBUG_CHAT}")
+            print(f"\n📱 No new apartments found - checking DEBUG_CHAT configuration...")
+            print(f"🔍 DEBUG_CHAT value: '{DEBUG_CHAT}'")
+            
+            # Check if DEBUG_CHAT is properly configured (not empty, None, or placeholder)
+            debug_configured = (DEBUG_CHAT and 
+                              DEBUG_CHAT.strip() != "" and 
+                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+            
+            if debug_configured:
+                print(f"🔍 DEBUG_CHAT configured - sending DEBUG message to {DEBUG_CHAT}")
                 send_debug_apartment_to_telegram(apartments_list, TELEGRAM_BOT_TOKEN, DEBUG_CHAT)
             else:
-                print(f"📱 No new apartments to send to Telegram")
+                print(f"🔍 DEBUG_CHAT not configured or empty - skipping debug message")
+                print(f"📱 To enable debug messages, set DEBUG_CHAT environment variable to your chat ID")
     else:
         print(f"📱 Telegram export disabled (set EXPORT_TO_TELEGRAM=True to enable)")
 

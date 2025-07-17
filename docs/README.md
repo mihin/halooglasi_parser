@@ -64,7 +64,16 @@ make schedule
 - ✅ **Zero server costs** (GitHub free tier)
 - ✅ **Persistent tracking** - Remembers seen apartments between runs
 - ✅ **Auto-discovery** - Bot finds all active chats automatically
+- ✅ **Chat persistence** - Chat IDs stored as GitHub Actions artifacts (90-day retention)
 - ✅ **Manual trigger**: Actions → HaloOglasi Apartment Parser → Run workflow
+
+### Chat Persistence in GitHub Actions
+The bot uses GitHub Actions artifacts to maintain chat state across runs:
+- **Storage**: `chat_ids.txt` saved as workflow artifact (excluded from git)
+- **Retention**: 90-day automatic renewal keeps chat list persistent
+- **Auto-restore**: Each run downloads previous chat state before processing
+- **Backup**: Daily workflow maintains artifact freshness
+- **Isolation**: Chat data stays private to your repository
 
 ## ⚙️ Configuration
 
@@ -89,11 +98,11 @@ DEBUG_CHAT=your_debug_chat_id_here      # Forces debug messages when no new list
 - Other users won't receive notifications even if they message the bot
 
 **Chat Management:**
-- Auto-discovery: Chats stored in `chat_ids.txt` 
+- Auto-discovery: Chats stored in `chat_ids.txt` (GitHub Actions: as artifacts)
 - Exclusive mode: Only configured chat receives messages
 - Auto-cleanup: Blocked/deleted chats automatically removed
 - Multi-chat: Supports private chats, groups, and channels
-- Persistent: Chat IDs remembered between runs
+- Persistent: Chat IDs remembered between runs (local: file, cloud: artifacts)
 - Error handling: Continues sending to valid chats if some fail
 
 ### Search Settings (config.properties or environment variables)

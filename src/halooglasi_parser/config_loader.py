@@ -61,6 +61,10 @@ class ConfigLoader:
         if key in ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']:
             return f"YOUR_{key}_HERE"
         
+        # Return None for optional values that aren't set
+        if key == 'DEBUG_CHAT':
+            return None
+        
         return ""
     
     def get_all_credentials(self) -> Dict[str, str]:

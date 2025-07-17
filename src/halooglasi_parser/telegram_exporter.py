@@ -357,8 +357,14 @@ def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
         print("❌ Please configure TELEGRAM_BOT_TOKEN in config.py")
         return
     
-    if not debug_chat_id or debug_chat_id == "YOUR_CHAT_ID_HERE" or debug_chat_id == "":
+    # Check if DEBUG_CHAT is properly configured
+    debug_configured = (debug_chat_id and 
+                       debug_chat_id.strip() != "" and 
+                       debug_chat_id not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE"])
+    
+    if not debug_configured:
         print("📱 DEBUG_CHAT not configured, skipping debug message")
+        print(f"📱 DEBUG_CHAT value received: '{debug_chat_id}'")
         return
     
     # Get the most recent apartment (first in the list, as they're usually sorted by date)

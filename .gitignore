@@ -51,6 +51,9 @@ config.properties
 .env
 .secrets
 
+# Chat management files (handled as GitHub Actions artifacts)
+chat_ids.txt
+
 # Test outputs
 .pytest_cache/
 .coverage

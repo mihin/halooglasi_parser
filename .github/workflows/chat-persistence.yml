@@ -1,0 +1,89 @@
+name: Chat Persistence
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily to maintain artifact freshness (artifacts expire after 90 days)
+    - cron: '0 0 * * *'
+
+jobs:
+  save-chat-state:
+    runs-on: ubuntu-latest
+    name: Save Chat State
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download previous chat state
+      uses: actions/download-artifact@v4
+      with:
+        name: chat-ids-state
+        path: .
+      continue-on-error: true
+      
+    - name: Ensure chat_ids.txt exists
+      run: |
+        if [ ! -f chat_ids.txt ]; then
+          echo "# Telegram Chat IDs - one per line" > chat_ids.txt
+          echo "# Lines starting with # are comments" >> chat_ids.txt
+          echo "" >> chat_ids.txt
+          echo "Created default chat_ids.txt"
+        else
+          echo "Existing chat_ids.txt found"
+          echo "Current contents:"
+          cat chat_ids.txt
+        fi
+        
+    - name: Save chat state as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: chat-ids-state
+        path: chat_ids.txt
+        retention-days: 90
+        
+  apartment-search:
+    runs-on: ubuntu-latest
+    name: Apartment Search
+    needs: save-chat-state
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download chat state
+      uses: actions/download-artifact@v4
+      with:
+        name: chat-ids-state
+        path: .
+      continue-on-error: true
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create config from secrets
+      run: |
+        echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
+        echo "NOTIFICATION_INTERVAL_HOURS=${{ secrets.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
+        echo "DEBUG_CHAT=${{ secrets.DEBUG_CHAT || 'false' }}" >> config.properties
+        if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> config.properties
+        fi
+        
+    - name: Run apartment search
+      run: python scripts/run_search.py
+      
+    - name: Upload updated chat state
+      uses: actions/upload-artifact@v4
+      with:
+        name: chat-ids-state
+        path: chat_ids.txt
+        retention-days: 90
+      if: always()  # Upload even if search fails 

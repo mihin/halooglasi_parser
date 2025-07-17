@@ -95,6 +95,10 @@ jobs:
     - name: Run apartment search
       run: |
         echo "🏠 Starting apartment search..."
+        echo "🔍 Current working directory: $(pwd)"
+        echo "🔍 Files in workspace root:"
+        ls -la | grep -E "(chat_ids\.txt|config\.properties)" || echo "  No chat/config files found"
+        echo ""
         python scripts/run_search.py
         echo "✅ Search completed"
     
@@ -125,9 +129,17 @@ jobs:
       run: |
         echo "📋 Final chat state:"
         if [ -f chat_ids.txt ]; then
-          grep -v '^#' chat_ids.txt | grep -v '^$' || echo "  (no active chats)"
+          echo "  File contents:"
+          cat chat_ids.txt | head -10
+          echo ""
+          CHAT_COUNT=$(grep -v '^#' chat_ids.txt | grep -v '^$' | wc -l)
+          echo "  Active chat IDs found: $CHAT_COUNT"
+          if [ $CHAT_COUNT -gt 0 ]; then
+            echo "  Chat IDs:"
+            grep -v '^#' chat_ids.txt | grep -v '^$' | sed 's/^/    /'
+          fi
         else
-          echo "  (no chat_ids.txt file)"
+          echo "  (no chat_ids.txt file found)"
         fi
         
         echo ""

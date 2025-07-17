@@ -35,8 +35,19 @@ jobs:
       with:
         name: apartment-ids
         path: data/
-        github-token: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
+      
+    - name: Debug artifact download
+      run: |
+        echo "🔍 Artifact download result: ${{ steps.download-tracking-data.outcome }}"
+        echo "🔍 Files in data/ after download:"
+        ls -la data/ || echo "  data/ directory not found"
+        if [ -f "data/apartment-ids.json" ]; then
+          echo "✅ apartment-ids.json found"
+          echo "📊 File size: $(wc -c < data/apartment-ids.json) bytes"
+        else
+          echo "❌ apartment-ids.json not found"
+        fi
     
     - name: Initialize tracking file if needed
       run: |
@@ -177,6 +188,20 @@ jobs:
         
         echo "✅ Both persistent data files ready for upload"
     
+    - name: Debug before upload
+      if: always()
+      run: |
+        echo "🔍 Pre-upload verification:"
+        ls -la data/ || echo "  data/ directory not found"
+        if [ -f "data/apartment-ids.json" ]; then
+          echo "✅ apartment-ids.json exists for upload"
+          echo "📊 File size: $(wc -c < data/apartment-ids.json) bytes"
+          echo "📄 File content preview:"
+          head -3 data/apartment-ids.json
+        else
+          echo "❌ apartment-ids.json missing for upload!"
+        fi
+    
     - name: Upload persistent data
       if: always()
       uses: actions/upload-artifact@v4
@@ -184,6 +209,7 @@ jobs:
         name: apartment-ids
         path: data/apartment-ids.json
         retention-days: 90
+        if-no-files-found: warn
         
     - name: Upload chat state
       if: always()
@@ -192,6 +218,7 @@ jobs:
         name: chat-ids
         path: data/chat-ids.txt
         retention-days: 90
+        if-no-files-found: warn
       continue-on-error: true
         
     - name: Clean up output files

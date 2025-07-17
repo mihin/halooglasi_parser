@@ -15,6 +15,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Create data and logs directories
+      run: |
+        mkdir -p data logs
+        
     - name: Restore chat state
       id: restore-chat
       uses: actions/download-artifact@v4
@@ -46,10 +50,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
-    - name: Create data and logs directories
-      run: |
-        mkdir -p data logs
     
     - name: Download previous apartment tracking data
       id: download-tracking-data
@@ -153,6 +153,17 @@ jobs:
         else
           echo "  (no tracking file found)"
         fi
+        
+    - name: Ensure chat state file exists before upload
+      if: always()
+      run: |
+        if [ ! -f data/chat_ids.txt ]; then
+          echo "⚠️ Chat state file missing, creating empty one for upload"
+          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
+          echo "# Lines starting with # are comments" >> data/chat_ids.txt
+          echo "" >> data/chat_ids.txt
+        fi
+        echo "📁 Chat state file ready for upload"
         
     - name: Save chat state
       uses: actions/upload-artifact@v4

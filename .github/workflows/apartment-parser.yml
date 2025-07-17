@@ -20,21 +20,21 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: chat-ids-state
-        path: .
+        path: data/
       continue-on-error: true
       
     - name: Initialize chat state file
       run: |
-        if [ ! -f chat_ids.txt ]; then
+        if [ ! -f data/chat_ids.txt ]; then
           echo "🔄 First run or no previous chat state found"
-          echo "# Telegram Chat IDs - one per line" > chat_ids.txt
-          echo "# Lines starting with # are comments" >> chat_ids.txt
-          echo "" >> chat_ids.txt
-          echo "✅ Initialized empty chat_ids.txt"
+          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
+          echo "# Lines starting with # are comments" >> data/chat_ids.txt
+          echo "" >> data/chat_ids.txt
+          echo "✅ Initialized empty data/chat_ids.txt"
         else
           echo "✅ Restored previous chat state"
           echo "📋 Current chat IDs:"
-          grep -v '^#' chat_ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+          grep -v '^#' data/chat_ids.txt | grep -v '^$' || echo "  (no active chats yet)"
         fi
         
     - name: Set up Python
@@ -97,7 +97,9 @@ jobs:
         echo "🏠 Starting apartment search..."
         echo "🔍 Current working directory: $(pwd)"
         echo "🔍 Files in workspace root:"
-        ls -la | grep -E "(chat_ids\.txt|config\.properties)" || echo "  No chat/config files found"
+        ls -la | grep -E "(config\.properties)" || echo "  No config files found"
+        echo "🔍 Files in data/ directory:"
+        ls -la data/ | grep -E "(chat_ids\.txt|previous_apartment_ids\.json)" || echo "  No data files found"
         echo ""
         python scripts/run_search.py
         echo "✅ Search completed"
@@ -128,18 +130,18 @@ jobs:
     - name: Show final state
       run: |
         echo "📋 Final chat state:"
-        if [ -f chat_ids.txt ]; then
+        if [ -f data/chat_ids.txt ]; then
           echo "  File contents:"
-          cat chat_ids.txt | head -10
+          cat data/chat_ids.txt | head -10
           echo ""
-          CHAT_COUNT=$(grep -v '^#' chat_ids.txt | grep -v '^$' | wc -l)
+          CHAT_COUNT=$(grep -v '^#' data/chat_ids.txt | grep -v '^$' | wc -l)
           echo "  Active chat IDs found: $CHAT_COUNT"
           if [ $CHAT_COUNT -gt 0 ]; then
             echo "  Chat IDs:"
-            grep -v '^#' chat_ids.txt | grep -v '^$' | sed 's/^/    /'
+            grep -v '^#' data/chat_ids.txt | grep -v '^$' | sed 's/^/    /'
           fi
         else
-          echo "  (no chat_ids.txt file found)"
+          echo "  (no data/chat_ids.txt file found)"
         fi
         
         echo ""
@@ -156,15 +158,17 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: chat-ids-state
-        path: chat_ids.txt
+        path: data/chat_ids.txt
         retention-days: 90
       if: always()  # Always save state, even if search fails
         
     - name: Clean up output files
       if: always()
       run: |
-        # Remove all generated files except previous_apartment_ids.json
+        # Remove temporary files but keep persistent data (previous_apartment_ids.json, chat_ids.txt)
         rm -f data/halooglasi_data.json
         rm -f data/halooglasi_data.xlsx
         rm -f logs/*.log
-        echo "🧹 Cleaned up temporary output files" 
+        echo "🧹 Cleaned up temporary output files"
+        echo "📁 Preserved persistent data files:"
+        ls -la data/ | grep -E "(previous_apartment_ids\.json|chat_ids\.txt)" || echo "  No persistent files found" 

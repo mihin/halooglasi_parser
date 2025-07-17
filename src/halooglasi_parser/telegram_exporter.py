@@ -5,37 +5,37 @@ from datetime import datetime
 
 
 def get_chat_ids_file_path():
-    """Get the path to the chat IDs file"""
-    # Try multiple potential locations for chat_ids.txt
+    """Get the path to the chat IDs file in data/ directory"""
+    # Try multiple potential locations for chat_ids.txt in data/ directory
     
-    # Option 1: Workspace root (calculated from this file's location)
+    # Option 1: data/ directory relative to workspace root
     workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    workspace_path = os.path.join(workspace_root, 'chat_ids.txt')
+    data_workspace_path = os.path.join(workspace_root, 'data', 'chat_ids.txt')
     
-    # Option 2: Current working directory (for GitHub Actions)
-    cwd_path = os.path.join(os.getcwd(), 'chat_ids.txt')
+    # Option 2: data/ directory relative to current working directory
+    data_cwd_path = os.path.join(os.getcwd(), 'data', 'chat_ids.txt')
     
-    # Option 3: Scripts directory parent (if running from scripts/)
-    scripts_parent_path = os.path.join(os.path.dirname(os.getcwd()), 'chat_ids.txt')
+    # Option 3: data/ directory relative to scripts parent (if running from scripts/)
+    data_scripts_parent_path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'chat_ids.txt')
     
-    print(f"🔍 Checking chat_ids.txt locations:")
-    print(f"  1. Workspace root: {workspace_path} (exists: {os.path.exists(workspace_path)})")
-    print(f"  2. Current dir: {cwd_path} (exists: {os.path.exists(cwd_path)})")
-    print(f"  3. Parent dir: {scripts_parent_path} (exists: {os.path.exists(scripts_parent_path)})")
+    print(f"🔍 Checking chat_ids.txt locations in data/ directory:")
+    print(f"  1. Workspace data/: {data_workspace_path} (exists: {os.path.exists(data_workspace_path)})")
+    print(f"  2. Current data/: {data_cwd_path} (exists: {os.path.exists(data_cwd_path)})")
+    print(f"  3. Parent data/: {data_scripts_parent_path} (exists: {os.path.exists(data_scripts_parent_path)})")
     
-    # Return the first existing file, or default to workspace root
-    if os.path.exists(workspace_path):
-        print(f"✅ Using workspace root path: {workspace_path}")
-        return workspace_path
-    elif os.path.exists(cwd_path):
-        print(f"✅ Using current directory path: {cwd_path}")
-        return cwd_path
-    elif os.path.exists(scripts_parent_path):
-        print(f"✅ Using parent directory path: {scripts_parent_path}")
-        return scripts_parent_path
+    # Return the first existing file, or default to workspace data/
+    if os.path.exists(data_workspace_path):
+        print(f"✅ Using workspace data/ path: {data_workspace_path}")
+        return data_workspace_path
+    elif os.path.exists(data_cwd_path):
+        print(f"✅ Using current data/ path: {data_cwd_path}")
+        return data_cwd_path
+    elif os.path.exists(data_scripts_parent_path):
+        print(f"✅ Using parent data/ path: {data_scripts_parent_path}")
+        return data_scripts_parent_path
     else:
-        print(f"📂 No existing file found, will use workspace root: {workspace_path}")
-        return workspace_path
+        print(f"📂 No existing file found, will use workspace data/: {data_workspace_path}")
+        return data_workspace_path
 
 
 def load_chat_ids():

@@ -39,11 +39,6 @@ def main():
     config_loader.print_config_summary()
     
     # Debug: Show DEBUG_CHAT configuration
-    print(f"\n🔍 DEBUG_CHAT Configuration:")
-    print(f"  - DEBUG_CHAT value: '{DEBUG_CHAT}'")
-    print(f"  - DEBUG_CHAT type: {type(DEBUG_CHAT)}")
-    print(f"  - DEBUG_CHAT is None: {DEBUG_CHAT is None}")
-    print(f"  - DEBUG_CHAT is empty string: {DEBUG_CHAT == ''}")
     debug_chat_configured = (DEBUG_CHAT and 
                              DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE", "", None] and
                              not DEBUG_CHAT.startswith("YOUR_") and

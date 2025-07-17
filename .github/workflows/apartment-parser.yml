@@ -84,13 +84,27 @@ jobs:
         echo "🔧 Creating configuration..."
         echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
         echo "NOTIFICATION_INTERVAL_HOURS=${{ vars.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
-        echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT || 'false' }}" >> config.properties
+        
+        # Only write DEBUG_CHAT to config if not set as environment variable (secrets take precedence)
+        if [ -n "${{ secrets.DEBUG_CHAT }}" ]; then
+          echo "DEBUG_CHAT=${{ secrets.DEBUG_CHAT }}" >> config.properties
+          echo "🔧 DEBUG_CHAT set from repository secret"
+        elif [ -n "${{ vars.DEBUG_CHAT }}" ]; then
+          echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT }}" >> config.properties
+          echo "🔧 DEBUG_CHAT set from repository variable"
+        else
+          echo "🔧 DEBUG_CHAT not configured (will use environment or default)"
+        fi
+        
         if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
           echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> config.properties
           echo "✅ Exclusive chat mode enabled"
         else
           echo "✅ Auto-discovery mode enabled"
         fi
+        
+        echo "📋 Generated config.properties:"
+        cat config.properties
         
     - name: Run apartment search
       run: |

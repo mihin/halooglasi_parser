@@ -147,7 +147,7 @@ class ConfigLoader:
             
             # Show value for DEBUG_CHAT to help with debugging
             if key == 'DEBUG_CHAT':
-                print(f"  {key:20} | {status:20} | {config_status:12} | Value: {repr(value)}")
+                print(f"  {key:20} | {status:20} | {config_status:12} | Value: {value}")
             elif key in ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'] and is_configured:
                 print(f"  {key:20} | {status:20} | {config_status:12} | Value: ***hidden***")
             else:

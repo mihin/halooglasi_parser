@@ -38,13 +38,6 @@ def main():
     # Show configuration sources
     config_loader.print_config_summary()
     
-    # Debug: Show DEBUG_CHAT configuration
-    debug_chat_configured = (DEBUG_CHAT and 
-                             DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE", "", None] and
-                             not DEBUG_CHAT.startswith("YOUR_") and
-                             not DEBUG_CHAT.endswith("_HERE"))
-    print(f"  - DEBUG_CHAT configured: {debug_chat_configured}")
-    
     # Load previously seen apartment IDs
     print("\n📋 Loading previous apartment IDs...")
     previous_ids = load_previous_ids()

@@ -23,19 +23,19 @@ def get_chat_ids_file_path():
     print(f"  2. Current data/: {data_cwd_path} (exists: {os.path.exists(data_cwd_path)})")
     print(f"  3. Parent data/: {data_scripts_parent_path} (exists: {os.path.exists(data_scripts_parent_path)})")
     
-    # Return the first existing file, or default to workspace data/
-    if os.path.exists(data_workspace_path):
-        print(f"✅ Using workspace data/ path: {data_workspace_path}")
-        return data_workspace_path
-    elif os.path.exists(data_cwd_path):
+    # Return the first existing file, prioritizing current working directory over parent
+    if os.path.exists(data_cwd_path):
         print(f"✅ Using current data/ path: {data_cwd_path}")
         return data_cwd_path
+    elif os.path.exists(data_workspace_path):
+        print(f"✅ Using workspace data/ path: {data_workspace_path}")
+        return data_workspace_path
     elif os.path.exists(data_scripts_parent_path):
         print(f"✅ Using parent data/ path: {data_scripts_parent_path}")
         return data_scripts_parent_path
     else:
-        print(f"📂 No existing file found, will use workspace data/: {data_workspace_path}")
-        return data_workspace_path
+        print(f"📂 No existing file found, will use current data/: {data_cwd_path}")
+        return data_cwd_path
 
 
 def load_chat_ids():
@@ -306,6 +306,14 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
     # Determine which chat IDs to use
     chat_ids = set()
     
+    # Check if DEBUG_CHAT is configured - if so, disable auto-discovery and only use DEBUG_CHAT
+    from .config import DEBUG_CHAT
+    debug_configured = (DEBUG_CHAT and 
+                       DEBUG_CHAT.strip() != "" and 
+                       DEBUG_CHAT not in ["YOUR_DEBUG_CHAT_ID_HERE", "YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE"] and
+                       not DEBUG_CHAT.startswith("YOUR_") and
+                       not DEBUG_CHAT.endswith("_HERE"))
+    
     # If TELEGRAM_CHAT_ID is explicitly configured, use ONLY that one (disable auto-discovery)
     if (configured_chat_id and 
         configured_chat_id not in ["YOUR_CHAT_ID_HERE", "YOUR_TELEGRAM_CHAT_ID_HERE", "", None] and
@@ -314,6 +322,10 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
         chat_ids.add(configured_chat_id)
         print(f"📱 EXCLUSIVE MODE: Using only configured TELEGRAM_CHAT_ID: {configured_chat_id}")
         print(f"📱 Auto-discovery disabled - bot will ONLY send to this chat")
+    elif debug_configured:
+        # If DEBUG_CHAT is configured, disable auto-discovery and use only loaded chat IDs
+        print(f"📱 DEBUG MODE: DEBUG_CHAT configured, skipping auto-discovery")
+        chat_ids = load_chat_ids()
     else:
         # Auto-discovery mode: Load existing chat IDs from file and discover new ones
         print(f"📱 AUTO-DISCOVERY MODE: TELEGRAM_CHAT_ID not set, discovering active chats")

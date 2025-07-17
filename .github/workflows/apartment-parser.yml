@@ -57,6 +57,7 @@ jobs:
       with:
         name: apartment-tracking-data
         path: data/
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
     
     - name: Initialize tracking file if needed

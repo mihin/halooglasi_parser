@@ -86,15 +86,9 @@ jobs:
         echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
         echo "NOTIFICATION_INTERVAL_HOURS=${{ vars.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
         
-        # Only write DEBUG_CHAT to config if not set as environment variable (secrets take precedence)
         if [ -n "${{ secrets.DEBUG_CHAT }}" ]; then
           echo "DEBUG_CHAT=${{ secrets.DEBUG_CHAT }}" >> config.properties
           echo "🔧 DEBUG_CHAT set from repository secret"
-        elif [ -n "${{ vars.DEBUG_CHAT }}" ]; then
-          echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT }}" >> config.properties
-          echo "🔧 DEBUG_CHAT set from repository variable"
-        else
-          echo "🔧 DEBUG_CHAT not configured (will use environment or default)"
         fi
         
         if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
@@ -119,9 +113,12 @@ jobs:
         python scripts/run_search.py
         echo "✅ Search completed"
     
-    - name: Ensure tracking file exists before upload
+    - name: Finalize and upload persistent data
       if: always()
       run: |
+        echo "📁 Preparing persistent data for upload..."
+        
+        # Ensure apartment tracking file exists
         if [ ! -f "data/previous_apartment_ids.json" ]; then
           echo "⚠️ Tracking file missing, creating empty one"
           cat > data/previous_apartment_ids.json << 'EOF'
@@ -132,18 +129,16 @@ jobs:
         }
         EOF
         fi
-        echo "📁 Tracking file ready for upload"
-    
-    - name: Upload apartment tracking data for next run
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: apartment-tracking-data
-        path: data/previous_apartment_ids.json
-        retention-days: 90
-    
-    - name: Show final state
-      run: |
+        
+        # Ensure chat state file exists
+        if [ ! -f data/chat_ids.txt ]; then
+          echo "⚠️ Chat state file missing, creating empty one"
+          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
+          echo "# Lines starting with # are comments" >> data/chat_ids.txt
+          echo "" >> data/chat_ids.txt
+        fi
+        
+        echo ""
         echo "📋 Final chat state:"
         if [ -f data/chat_ids.txt ]; then
           echo "  File contents:"
@@ -169,24 +164,23 @@ jobs:
           echo "  (no tracking file found)"
         fi
         
-    - name: Ensure chat state file exists before upload
+        echo "✅ Both persistent data files ready for upload"
+    
+    - name: Upload persistent data
       if: always()
-      run: |
-        if [ ! -f data/chat_ids.txt ]; then
-          echo "⚠️ Chat state file missing, creating empty one for upload"
-          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
-          echo "# Lines starting with # are comments" >> data/chat_ids.txt
-          echo "" >> data/chat_ids.txt
-        fi
-        echo "📁 Chat state file ready for upload"
+      uses: actions/upload-artifact@v4
+      with:
+        name: apartment-tracking-data
+        path: data/previous_apartment_ids.json
+        retention-days: 90
         
-    - name: Save chat state
+    - name: Upload chat state
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: chat-ids-state
         path: data/chat_ids.txt
         retention-days: 90
-      if: always()  # Always save state, even if search fails
         
     - name: Clean up output files
       if: always()

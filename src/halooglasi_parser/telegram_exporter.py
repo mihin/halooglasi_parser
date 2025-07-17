@@ -46,6 +46,24 @@ def save_chat_ids(chat_ids):
         print(f"❌ Error saving chat IDs to file: {e}")
 
 
+def get_telegram_updates(bot_token, limit=100):
+    """Get recent updates from Telegram to find all active chat IDs"""
+    url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
+    
+    params = {
+        "limit": limit,
+        "timeout": 10
+    }
+    
+    try:
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Failed to get Telegram updates: {e}")
+        return None
+
+
 def discover_chat_ids(bot_token):
     """Discover chat IDs by getting updates from Telegram bot"""
     url = f"https://api.telegram.org/bot{bot_token}/getUpdates"
@@ -90,6 +108,46 @@ def discover_chat_ids(bot_token):
     except requests.exceptions.RequestException as e:
         print(f"❌ Failed to discover chat IDs: {e}")
         return set()
+
+
+def get_active_chat_ids(bot_token):
+    """Get all active chat IDs from recent updates"""
+    updates_data = get_telegram_updates(bot_token)
+    
+    if not updates_data or not updates_data.get('ok'):
+        print("❌ Failed to retrieve Telegram updates")
+        return []
+    
+    chat_ids = set()
+    updates = updates_data.get('result', [])
+    
+    for update in updates:
+        # Check for different types of messages
+        message = None
+        if 'message' in update:
+            message = update['message']
+        elif 'edited_message' in update:
+            message = update['edited_message']
+        elif 'channel_post' in update:
+            message = update['channel_post']
+        elif 'edited_channel_post' in update:
+            message = update['edited_channel_post']
+        elif 'callback_query' in update and 'message' in update['callback_query']:
+            message = update['callback_query']['message']
+        
+        if message and 'chat' in message:
+            chat_id = message['chat']['id']
+            chat_ids.add(str(chat_id))
+    
+    # Convert to list and filter out empty results
+    active_chat_ids = list(chat_ids)
+    
+    if active_chat_ids:
+        print(f"📋 Found {len(active_chat_ids)} active chat(s): {active_chat_ids}")
+    else:
+        print("⚠️ No active chats found in recent updates")
+    
+    return active_chat_ids
 
 
 def remove_chat_id(chat_id, chat_ids):
@@ -218,11 +276,16 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
         # Load existing chat IDs from file
         chat_ids = load_chat_ids()
         
-        # Discover new chat IDs if none exist or if we want to find new ones
+        # Discover new chat IDs using both methods
         discovered_ids = discover_chat_ids(bot_token)
-        if discovered_ids:
+        active_ids = set(str(chat_id) for chat_id in get_active_chat_ids(bot_token))
+        
+        # Combine discovered IDs from both methods
+        all_discovered = discovered_ids.union(active_ids)
+        
+        if all_discovered:
             original_count = len(chat_ids)
-            chat_ids.update(discovered_ids)
+            chat_ids.update(all_discovered)
             new_count = len(chat_ids) - original_count
             if new_count > 0:
                 print(f"🔍 Found {new_count} new chat IDs")

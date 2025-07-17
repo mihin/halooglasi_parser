@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 HaloOglasi Apartment Parser - Automated Scheduler
-Runs apartment search every 30 minutes from 8:00 AM to 8:00 PM
+Runs apartment search at 7:00 AM, 1:00 PM, and 7:00 PM daily
 """
 
 import schedule
@@ -35,17 +35,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def is_within_active_hours():
-    """Check if current time is within active hours (8:00 AM - 8:00 PM)"""
+    """Check if current time is one of the scheduled times (7:00 AM, 1:00 PM, 7:00 PM)"""
     now = datetime.now().time()
-    start_time = dt_time(8, 0)   # 8:00 AM
-    end_time = dt_time(20, 0)    # 8:00 PM
+    scheduled_times = [
+        dt_time(7, 0),   # 7:00 AM
+        dt_time(13, 0),  # 1:00 PM  
+        dt_time(19, 0),  # 7:00 PM
+    ]
     
-    return start_time <= now <= end_time
+    # Allow a 5-minute window around each scheduled time
+    for scheduled_time in scheduled_times:
+        # Convert to minutes for easier comparison
+        now_minutes = now.hour * 60 + now.minute
+        scheduled_minutes = scheduled_time.hour * 60 + scheduled_time.minute
+        
+        # Check if within 5 minutes of scheduled time
+        if abs(now_minutes - scheduled_minutes) <= 5:
+            return True
+    
+    return False
 
 def scheduled_apartment_search():
     """Wrapper function for scheduled apartment search"""
     if not is_within_active_hours():
-        logger.info("Outside active hours (8:00 AM - 8:00 PM), skipping search")
+        logger.info("Outside scheduled hours (7:00 AM, 1:00 PM, 7:00 PM), skipping search")
         return
     
     logger.info("=" * 80)
@@ -86,19 +99,21 @@ def scheduled_apartment_search():
 def main():
     """Main scheduler function"""
     logger.info("🕐 HaloOglasi Apartment Scheduler starting...")
-    logger.info("📅 Schedule: Every 30 minutes from 8:00 AM to 8:00 PM")
+    logger.info("📅 Schedule: Daily at 7:00 AM, 1:00 PM, and 7:00 PM")
     logger.info("🔄 Press Ctrl+C to stop the scheduler")
     logger.info("")
     
-    # Schedule the job every 30 minutes
-    schedule.every(30).minutes.do(scheduled_apartment_search)
+    # Schedule the job at specific times: 7am, 1pm, 7pm
+    schedule.every().day.at("07:00").do(scheduled_apartment_search)
+    schedule.every().day.at("13:00").do(scheduled_apartment_search)
+    schedule.every().day.at("19:00").do(scheduled_apartment_search)
     
-    # Run immediately if within active hours
-    if is_within_active_hours():
-        logger.info("🚀 Running initial search...")
-        scheduled_apartment_search()
+    # Show next scheduled run time
+    next_run = schedule.next_run()
+    if next_run:
+        logger.info(f"⏰ Next scheduled run: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
-        logger.info("⏰ Outside active hours, waiting for next scheduled time...")
+        logger.info("⏰ Waiting for next scheduled time...")
     
     try:
         while True:

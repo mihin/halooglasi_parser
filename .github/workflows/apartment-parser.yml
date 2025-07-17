@@ -2,9 +2,9 @@ name: HaloOglasi Apartment Parser
 
 on:
   schedule:
-    # Run every 30 minutes from 8:00 AM to 8:00 PM UTC
-    # This covers 8am-8pm in most European timezones
-    - cron: '0,30 8-20 * * *'
+    # Run at 7:00 AM, 1:00 PM, and 7:00 PM UTC
+    # This corresponds to the new schedule requirements
+    - cron: '0 7,13,19 * * *'
   
   # Allow manual triggering
   workflow_dispatch:

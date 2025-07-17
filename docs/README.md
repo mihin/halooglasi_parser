@@ -69,7 +69,7 @@ make schedule
 
 ### Chat Persistence in GitHub Actions
 The bot uses GitHub Actions artifacts to maintain chat state across runs:
-- **Storage**: `chat_ids.txt` saved as workflow artifact (excluded from git)
+- **Storage**: `chat-ids.txt` saved as workflow artifact (excluded from git)
 - **Retention**: 90-day automatic renewal with each run
 - **Auto-restore**: Each run downloads previous chat state before processing
 - **First run**: Gracefully handles missing artifacts by creating empty chat state
@@ -98,7 +98,7 @@ DEBUG_CHAT=your_debug_chat_id_here      # Forces debug messages when no new list
 - Other users won't receive notifications even if they message the bot
 
 **Chat Management:**
-- Auto-discovery: Chats stored in `chat_ids.txt` (GitHub Actions: as artifacts)
+- Auto-discovery: Chats stored in `chat-ids.txt` (GitHub Actions: as artifacts)
 - Exclusive mode: Only configured chat receives messages
 - Auto-cleanup: Blocked/deleted chats automatically removed
 - Multi-chat: Supports private chats, groups, and channels
@@ -173,7 +173,7 @@ MAX_DAYS_OLD = 2           # Output apartments from last 2 days (console/excel)
 - **Multiple chats?** Bot sends to ALL active chats (auto-discovery mode only)
 - **Only want one chat?** Set `TELEGRAM_CHAT_ID` for exclusive mode
 - **Group/channel?** Add bot as admin and send a message
-- **Chat removed?** Bot auto-removes blocked/deleted chats from `chat_ids.txt`
+- **Chat removed?** Bot auto-removes blocked/deleted chats from `chat-ids.txt`
 
 ### Chat Mode Control
 ```bash
@@ -184,7 +184,7 @@ MAX_DAYS_OLD = 2           # Output apartments from last 2 days (console/excel)
 TELEGRAM_CHAT_ID=your_chat_id_here    # Disables bot for other users
 
 # View discovered chats (auto-discovery mode only)
-cat chat_ids.txt
+cat chat-ids.txt
 ```
 
 ## 🛠️ Technical Details
@@ -192,7 +192,7 @@ cat chat_ids.txt
 ### Chat Discovery Process
 1. **API Query**: Bot calls Telegram `/getUpdates` to find recent interactions
 2. **Multi-Source**: Analyzes messages, edits, channel posts, callback queries
-3. **Persistent Storage**: Saves all discovered chat IDs to `chat_ids.txt`
+3. **Persistent Storage**: Saves all discovered chat IDs to `chat-ids.txt`
 4. **Auto-Cleanup**: Removes chats when bot is blocked/deleted
 
 ### Error Handling
@@ -201,7 +201,7 @@ cat chat_ids.txt
 - **Rate Limiting**: 0.5s delay between messages to avoid Telegram limits
 - **Detailed Logging**: Reports success/failure counts per chat
 
-### File Format: `chat_ids.txt`
+### File Format: `chat-ids.txt`
 ```
 # Telegram Chat IDs - one per line
 123456789        # Private chat

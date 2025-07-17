@@ -19,28 +19,6 @@ jobs:
       run: |
         mkdir -p data logs
         
-    - name: Restore chat state
-      id: restore-chat
-      uses: actions/download-artifact@v4
-      with:
-        name: chat-ids-state
-        path: data/
-      continue-on-error: true
-      
-    - name: Initialize chat state file
-      run: |
-        if [ ! -f data/chat_ids.txt ]; then
-          echo "🔄 First run or no previous chat state found"
-          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
-          echo "# Lines starting with # are comments" >> data/chat_ids.txt
-          echo "" >> data/chat_ids.txt
-          echo "✅ Initialized empty data/chat_ids.txt"
-        else
-          echo "✅ Restored previous chat state"
-          echo "📋 Current chat IDs:"
-          grep -v '^#' data/chat_ids.txt | grep -v '^$' || echo "  (no active chats yet)"
-        fi
-        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -55,17 +33,17 @@ jobs:
       id: download-tracking-data
       uses: actions/download-artifact@v4
       with:
-        name: apartment-tracking-data
+        name: apartment-ids
         path: data/
         github-token: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
     
     - name: Initialize tracking file if needed
       run: |
-        if [ ! -f "data/previous_apartment_ids.json" ]; then
+        if [ ! -f "data/apartment-ids.json" ]; then
           echo "🔄 First run or no previous tracking data found"
           echo "📝 Creating new tracking file - all apartments will be marked as NEW"
-          cat > data/previous_apartment_ids.json << 'EOF'
+          cat > data/apartment-ids.json << 'EOF'
         {
           "ids": [],
           "last_updated": "1970-01-01T00:00:00",
@@ -76,7 +54,7 @@ jobs:
         else
           echo "✅ Previous tracking data restored successfully"
           echo "📊 Current tracking data:"
-          cat data/previous_apartment_ids.json | head -10
+          cat data/apartment-ids.json | head -10
           echo "Will identify NEW vs EXISTING apartments"
         fi
     
@@ -101,6 +79,30 @@ jobs:
         echo "📋 Generated config.properties:"
         cat config.properties
         
+    - name: Restore chat state (Auto-discovery mode only)
+      id: restore-chat
+      if: ${{ secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: chat-ids
+        path: data/
+      continue-on-error: true
+      
+    - name: Initialize chat state file
+      if: ${{ secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
+      run: |
+        if [ ! -f data/chat-ids.txt ]; then
+          echo "🔄 First run or no previous chat state found"
+          echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
+          echo "# Lines starting with # are comments" >> data/chat-ids.txt
+          echo "" >> data/chat-ids.txt
+          echo "✅ Initialized empty data/chat-ids.txt"
+        else
+          echo "✅ Restored previous chat state"
+          echo "📋 Current chat IDs:"
+          grep -v '^#' data/chat-ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+        fi
+        
     - name: Run apartment search
       run: |
         echo "🏠 Starting apartment search..."
@@ -108,7 +110,7 @@ jobs:
         echo "🔍 Files in workspace root:"
         ls -la | grep -E "(config\.properties)" || echo "  No config files found"
         echo "🔍 Files in data/ directory:"
-        ls -la data/ | grep -E "(chat_ids\.txt|previous_apartment_ids\.json)" || echo "  No data files found"
+        ls -la data/ | grep -E "(chat-ids\.txt|apartment-ids\.json)" || echo "  No data files found"
         echo ""
         python scripts/run_search.py
         echo "✅ Search completed"
@@ -119,9 +121,9 @@ jobs:
         echo "📁 Preparing persistent data for upload..."
         
         # Ensure apartment tracking file exists
-        if [ ! -f "data/previous_apartment_ids.json" ]; then
+        if [ ! -f "data/apartment-ids.json" ]; then
           echo "⚠️ Tracking file missing, creating empty one"
-          cat > data/previous_apartment_ids.json << 'EOF'
+          cat > data/apartment-ids.json << 'EOF'
         {
           "ids": [],
           "last_updated": "1970-01-01T00:00:00",
@@ -130,35 +132,41 @@ jobs:
         EOF
         fi
         
-        # Ensure chat state file exists
-        if [ ! -f data/chat_ids.txt ]; then
-          echo "⚠️ Chat state file missing, creating empty one"
-          echo "# Telegram Chat IDs - one per line" > data/chat_ids.txt
-          echo "# Lines starting with # are comments" >> data/chat_ids.txt
-          echo "" >> data/chat_ids.txt
+        # Ensure chat state file exists (only in auto-discovery mode)
+        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
+          if [ ! -f data/chat-ids.txt ]; then
+            echo "⚠️ Chat state file missing, creating empty one"
+            echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
+            echo "# Lines starting with # are comments" >> data/chat-ids.txt
+            echo "" >> data/chat-ids.txt
+          fi
         fi
         
         echo ""
         echo "📋 Final chat state:"
-        if [ -f data/chat_ids.txt ]; then
-          echo "  File contents:"
-          cat data/chat_ids.txt | head -10
-          echo ""
-          CHAT_COUNT=$(grep -v '^#' data/chat_ids.txt | grep -v '^$' | wc -l)
-          echo "  Active chat IDs found: $CHAT_COUNT"
-          if [ $CHAT_COUNT -gt 0 ]; then
-            echo "  Chat IDs:"
-            grep -v '^#' data/chat_ids.txt | grep -v '^$' | sed 's/^/    /'
+        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
+          if [ -f data/chat-ids.txt ]; then
+            echo "  File contents:"
+            cat data/chat-ids.txt | head -10
+            echo ""
+            CHAT_COUNT=$(grep -v '^#' data/chat-ids.txt | grep -v '^$' | wc -l)
+            echo "  Active chat IDs found: $CHAT_COUNT"
+            if [ $CHAT_COUNT -gt 0 ]; then
+              echo "  Chat IDs:"
+              grep -v '^#' data/chat-ids.txt | grep -v '^$' | sed 's/^/    /'
+            fi
+          else
+            echo "  (no data/chat-ids.txt file found)"
           fi
         else
-          echo "  (no data/chat_ids.txt file found)"
+          echo "  (skipped - not in auto-discovery mode)"
         fi
         
         echo ""
         echo "📊 Final apartment tracking state:"
-        if [ -f "data/previous_apartment_ids.json" ]; then
+        if [ -f "data/apartment-ids.json" ]; then
           echo "  Tracking file exists:"
-          cat data/previous_apartment_ids.json | head -5
+          cat data/apartment-ids.json | head -5
           echo "  (file ready for next run)"
         else
           echo "  (no tracking file found)"
@@ -170,16 +178,16 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: apartment-tracking-data
-        path: data/previous_apartment_ids.json
+        name: apartment-ids
+        path: data/apartment-ids.json
         retention-days: 90
         
     - name: Upload chat state
-      if: always()
+      if: ${{ always() && secrets.DEBUG_CHAT == '' && secrets.TELEGRAM_CHAT_ID == '' }}
       uses: actions/upload-artifact@v4
       with:
-        name: chat-ids-state
-        path: data/chat_ids.txt
+        name: chat-ids
+        path: data/chat-ids.txt
         retention-days: 90
         
     - name: Clean up output files
@@ -191,4 +199,4 @@ jobs:
         rm -f logs/*.log
         echo "🧹 Cleaned up temporary output files"
         echo "📁 Preserved persistent data files:"
-        ls -la data/ | grep -E "(previous_apartment_ids\.json|chat_ids\.txt)" || echo "  No persistent files found" 
+        ls -la data/ | grep -E "(apartment-ids\.json|chat-ids\.txt)" || echo "  No persistent files found" 

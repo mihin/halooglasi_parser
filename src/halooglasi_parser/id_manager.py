@@ -5,7 +5,7 @@ from datetime import datetime
 # Get the project root directory (two levels up from this file)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
-ID_FILE = os.path.join(DATA_DIR, "previous_apartment_ids.json")
+ID_FILE = os.path.join(DATA_DIR, "apartment-ids.json")
 
 def load_previous_ids():
     """Load previously found apartment IDs from local file"""

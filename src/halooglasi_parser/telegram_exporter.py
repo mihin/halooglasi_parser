@@ -10,15 +10,15 @@ def get_chat_ids_file_path():
     
     # Option 1: data/ directory relative to workspace root
     workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    data_workspace_path = os.path.join(workspace_root, 'data', 'chat_ids.txt')
+    data_workspace_path = os.path.join(workspace_root, 'data', 'chat-ids.txt')
     
     # Option 2: data/ directory relative to current working directory
-    data_cwd_path = os.path.join(os.getcwd(), 'data', 'chat_ids.txt')
+    data_cwd_path = os.path.join(os.getcwd(), 'data', 'chat-ids.txt')
     
     # Option 3: data/ directory relative to scripts parent (if running from scripts/)
-    data_scripts_parent_path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'chat_ids.txt')
+    data_scripts_parent_path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'chat-ids.txt')
     
-    print(f"🔍 Checking chat_ids.txt locations in data/ directory:")
+    print(f"🔍 Checking chat-ids.txt locations in data/ directory:")
     print(f"  1. Workspace data/: {data_workspace_path} (exists: {os.path.exists(data_workspace_path)})")
     print(f"  2. Current data/: {data_cwd_path} (exists: {os.path.exists(data_cwd_path)})")
     print(f"  3. Parent data/: {data_scripts_parent_path} (exists: {os.path.exists(data_scripts_parent_path)})")

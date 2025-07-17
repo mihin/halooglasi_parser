@@ -15,9 +15,21 @@ def load_previous_ids():
     try:
         with open(ID_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
-            return set(data.get('ids', []))
-    except (json.JSONDecodeError, KeyError):
-        print(f"⚠️  Warning: Could not read {ID_FILE}, starting with empty ID list")
+            
+            # Handle both old format (plain list) and new format (dict with 'ids' key)
+            if isinstance(data, list):
+                # Old format: plain list of IDs
+                print("📝 Converting old ID format to new format...")
+                return set(data)
+            elif isinstance(data, dict):
+                # New format: dict with 'ids', 'last_updated', etc.
+                return set(data.get('ids', []))
+            else:
+                print(f"⚠️  Warning: Unexpected data format in {ID_FILE}, starting with empty ID list")
+                return set()
+                
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"⚠️  Warning: Could not read {ID_FILE}: {e}, starting with empty ID list")
         return set()
 
 def save_current_ids(apartment_ids):

@@ -63,7 +63,13 @@ jobs:
         if [ ! -f "data/previous_apartment_ids.json" ]; then
           echo "📝 No previous tracking data (normal for first run)"
           echo "Creating new tracking file - all apartments will be marked as NEW"
-          echo '[]' > data/previous_apartment_ids.json
+          cat > data/previous_apartment_ids.json << 'EOF'
+        {
+          "ids": [],
+          "last_updated": "1970-01-01T00:00:00",
+          "count": 0
+        }
+        EOF
         else
           echo "✅ Previous tracking data loaded successfully"
           echo "Will identify NEW vs EXISTING apartments"
@@ -93,7 +99,13 @@ jobs:
       run: |
         if [ ! -f "data/previous_apartment_ids.json" ]; then
           echo "⚠️ Tracking file missing, creating empty one"
-          echo '[]' > data/previous_apartment_ids.json
+          cat > data/previous_apartment_ids.json << 'EOF'
+        {
+          "ids": [],
+          "last_updated": "1970-01-01T00:00:00",
+          "count": 0
+        }
+        EOF
         fi
         echo "📁 Tracking file ready for upload"
     

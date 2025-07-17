@@ -126,7 +126,7 @@ class ConfigLoader:
     
     def print_config_summary(self):
         """Print a summary of where configuration values are loaded from."""
-        important_keys = ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']
+        important_keys = ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'DEBUG_CHAT']
         
         print("\n🔧 Configuration Sources:")
         print("=" * 50)
@@ -134,6 +134,7 @@ class ConfigLoader:
         for key in important_keys:
             source = self.get_config_source(key)
             is_configured = self.is_configured(key)
+            value = self.get(key)
             
             if source == "environment":
                 status = "✅ Environment Variable"
@@ -143,7 +144,14 @@ class ConfigLoader:
                 status = "⚠️  Default/Placeholder"
             
             config_status = "✅ Configured" if is_configured else "❌ Not Set"
-            print(f"  {key:20} | {status:20} | {config_status}")
+            
+            # Show value for DEBUG_CHAT to help with debugging
+            if key == 'DEBUG_CHAT':
+                print(f"  {key:20} | {status:20} | {config_status:12} | Value: {repr(value)}")
+            elif key in ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'] and is_configured:
+                print(f"  {key:20} | {status:20} | {config_status:12} | Value: ***hidden***")
+            else:
+                print(f"  {key:20} | {status:20} | {config_status}")
         
         print("=" * 50)
 

@@ -52,6 +52,7 @@ jobs:
         mkdir -p data logs
     
     - name: Download previous apartment tracking data
+      id: download-tracking-data
       uses: actions/download-artifact@v4
       with:
         name: apartment-tracking-data
@@ -61,8 +62,8 @@ jobs:
     - name: Initialize tracking file if needed
       run: |
         if [ ! -f "data/previous_apartment_ids.json" ]; then
-          echo "📝 No previous tracking data (normal for first run)"
-          echo "Creating new tracking file - all apartments will be marked as NEW"
+          echo "🔄 First run or no previous tracking data found"
+          echo "📝 Creating new tracking file - all apartments will be marked as NEW"
           cat > data/previous_apartment_ids.json << 'EOF'
         {
           "ids": [],
@@ -70,8 +71,11 @@ jobs:
           "count": 0
         }
         EOF
+          echo "✅ Initialized empty apartment tracking file"
         else
-          echo "✅ Previous tracking data loaded successfully"
+          echo "✅ Previous tracking data restored successfully"
+          echo "📊 Current tracking data:"
+          cat data/previous_apartment_ids.json | head -10
           echo "Will identify NEW vs EXISTING apartments"
         fi
     
@@ -117,13 +121,23 @@ jobs:
         path: data/previous_apartment_ids.json
         retention-days: 90
     
-    - name: Show updated chat state
+    - name: Show final state
       run: |
         echo "📋 Final chat state:"
         if [ -f chat_ids.txt ]; then
           grep -v '^#' chat_ids.txt | grep -v '^$' || echo "  (no active chats)"
         else
           echo "  (no chat_ids.txt file)"
+        fi
+        
+        echo ""
+        echo "📊 Final apartment tracking state:"
+        if [ -f "data/previous_apartment_ids.json" ]; then
+          echo "  Tracking file exists:"
+          cat data/previous_apartment_ids.json | head -5
+          echo "  (file ready for next run)"
+        else
+          echo "  (no tracking file found)"
         fi
         
     - name: Save chat state

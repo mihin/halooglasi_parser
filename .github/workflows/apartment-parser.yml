@@ -1,55 +1,61 @@
 name: HaloOglasi Apartment Parser
 
 on:
-  schedule:
-    # Run at 7:00 AM, 1:00 PM, and 7:00 PM UTC
-    # This corresponds to the new schedule requirements
-    - cron: '0 7,13,19 * * *'
-  
-  # Allow manual triggering
   workflow_dispatch:
+  schedule:
+    # Run 3 times daily: 7am, 1pm, 7pm UTC
+    - cron: '0 7,13,19 * * *'
 
 jobs:
-  parse-apartments:
+  apartment-search:
     runs-on: ubuntu-latest
+    name: Search and Notify
     
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v4
-    
+      
+    - name: Restore chat state
+      id: restore-chat
+      uses: actions/download-artifact@v4
+      with:
+        name: chat-ids-state
+        path: .
+      continue-on-error: true
+      
+    - name: Initialize chat state file
+      run: |
+        if [ ! -f chat_ids.txt ]; then
+          echo "🔄 First run or no previous chat state found"
+          echo "# Telegram Chat IDs - one per line" > chat_ids.txt
+          echo "# Lines starting with # are comments" >> chat_ids.txt
+          echo "" >> chat_ids.txt
+          echo "✅ Initialized empty chat_ids.txt"
+        else
+          echo "✅ Restored previous chat state"
+          echo "📋 Current chat IDs:"
+          grep -v '^#' chat_ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+        fi
+        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
+        
     - name: Create data and logs directories
       run: |
         mkdir -p data logs
     
     - name: Download previous apartment tracking data
-      run: |
-        echo "🔍 Looking for previous tracking data from last successful run..."
-        
-        # Get the last successful workflow run ID
-        LAST_RUN_ID=$(gh run list --workflow=apartment-parser.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
-        
-        if [ -n "$LAST_RUN_ID" ] && [ "$LAST_RUN_ID" != "null" ]; then
-          echo "📥 Attempting to download from run ID: $LAST_RUN_ID"
-          if gh run download $LAST_RUN_ID --name apartment-tracking-data --dir data/ 2>/dev/null; then
-            echo "✅ Previous tracking data downloaded successfully"
-          else
-            echo "⚠️ Download failed, will create new tracking file"
-          fi
-        else
-          echo "📝 No previous successful runs found (normal for first run)"
-        fi
-      env:
-        GH_TOKEN: ${{ github.token }}
+      uses: actions/download-artifact@v4
+      with:
+        name: apartment-tracking-data
+        path: data/
       continue-on-error: true
     
     - name: Initialize tracking file if needed
@@ -63,13 +69,24 @@ jobs:
           echo "Will identify NEW vs EXISTING apartments"
         fi
     
-    - name: Run apartment parser
-      env:
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    - name: Create config from secrets
       run: |
-        cd scripts
-        python run_search.py
+        echo "🔧 Creating configuration..."
+        echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
+        echo "NOTIFICATION_INTERVAL_HOURS=${{ vars.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
+        echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT || 'false' }}" >> config.properties
+        if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> config.properties
+          echo "✅ Exclusive chat mode enabled"
+        else
+          echo "✅ Auto-discovery mode enabled"
+        fi
+        
+    - name: Run apartment search
+      run: |
+        echo "🏠 Starting apartment search..."
+        python scripts/run_search.py
+        echo "✅ Search completed"
     
     - name: Ensure tracking file exists before upload
       if: always()
@@ -88,6 +105,23 @@ jobs:
         path: data/previous_apartment_ids.json
         retention-days: 90
     
+    - name: Show updated chat state
+      run: |
+        echo "📋 Final chat state:"
+        if [ -f chat_ids.txt ]; then
+          grep -v '^#' chat_ids.txt | grep -v '^$' || echo "  (no active chats)"
+        else
+          echo "  (no chat_ids.txt file)"
+        fi
+        
+    - name: Save chat state
+      uses: actions/upload-artifact@v4
+      with:
+        name: chat-ids-state
+        path: chat_ids.txt
+        retention-days: 90
+      if: always()  # Always save state, even if search fails
+        
     - name: Clean up output files
       if: always()
       run: |

@@ -70,9 +70,9 @@ make schedule
 ### Chat Persistence in GitHub Actions
 The bot uses GitHub Actions artifacts to maintain chat state across runs:
 - **Storage**: `chat_ids.txt` saved as workflow artifact (excluded from git)
-- **Retention**: 90-day automatic renewal keeps chat list persistent
+- **Retention**: 90-day automatic renewal with each run
 - **Auto-restore**: Each run downloads previous chat state before processing
-- **Backup**: Daily workflow maintains artifact freshness
+- **First run**: Gracefully handles missing artifacts by creating empty chat state
 - **Isolation**: Chat data stays private to your repository
 
 ## ⚙️ Configuration

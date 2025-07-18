@@ -39,23 +39,12 @@ jobs:
         if_no_artifact_found: warn
       continue-on-error: true
       
-    - name: Debug artifact download
-      run: |
-        echo "🔍 Artifact download result: ${{ steps.download-tracking-data.outcome }}"
-        echo "🔍 Files in data/ after download:"
-        ls -la data/ || echo "  data/ directory not found"
-        if [ -f "data/apartment-ids.json" ]; then
-          echo "✅ apartment-ids.json found"
-          echo "📊 File size: $(wc -c < data/apartment-ids.json) bytes"
-        else
-          echo "❌ apartment-ids.json not found"
-        fi
+
     
     - name: Initialize tracking file if needed
       run: |
         if [ ! -f "data/apartment-ids.json" ]; then
-          echo "🔄 First run or no previous tracking data found"
-          echo "📝 Creating new tracking file - all apartments will be marked as NEW"
+          echo "🔄 Creating new tracking file - all apartments will be marked as NEW"
           cat > data/apartment-ids.json << 'EOF'
         {
           "ids": [],
@@ -63,12 +52,8 @@ jobs:
           "count": 0
         }
         EOF
-          echo "✅ Initialized empty apartment tracking file"
         else
-          echo "✅ Previous tracking data restored successfully"
-          echo "📊 Current tracking data:"
-          cat data/apartment-ids.json | head -10
-          echo "Will identify NEW vs EXISTING apartments"
+          echo "✅ Previous tracking data restored"
         fi
     
     - name: Create config from secrets and variables
@@ -77,10 +62,9 @@ jobs:
         echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
         echo "NOTIFICATION_INTERVAL_HOURS=${{ vars.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
         
-        # Debug Chat (moved to variables)
+        # Debug Chat
         if [ -n "${{ vars.DEBUG_CHAT }}" ]; then
           echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT }}" >> config.properties
-          echo "🔧 DEBUG_CHAT set from repository variable"
         fi
         
         # Telegram Chat ID (exclusive mode)
@@ -94,52 +78,39 @@ jobs:
         # Search Configuration Variables
         if [ -n "${{ vars.SEARCH_TYPE }}" ]; then
           echo "SEARCH_TYPE=${{ vars.SEARCH_TYPE }}" >> config.properties
-          echo "🔧 SEARCH_TYPE set to: ${{ vars.SEARCH_TYPE }}"
         fi
         
         if [ -n "${{ vars.PRICE_FROM }}" ]; then
           echo "PRICE_FROM=${{ vars.PRICE_FROM }}" >> config.properties
-          echo "🔧 PRICE_FROM set to: ${{ vars.PRICE_FROM }}"
         fi
         
         if [ -n "${{ vars.PRICE_TO }}" ]; then
           echo "PRICE_TO=${{ vars.PRICE_TO }}" >> config.properties
-          echo "🔧 PRICE_TO set to: ${{ vars.PRICE_TO }}"
         fi
         
         if [ -n "${{ vars.APARTMENT_AREA_FROM }}" ]; then
           echo "APARTMENT_AREA_FROM=${{ vars.APARTMENT_AREA_FROM }}" >> config.properties
-          echo "🔧 APARTMENT_AREA_FROM set to: ${{ vars.APARTMENT_AREA_FROM }}"
         fi
         
         if [ -n "${{ vars.APARTMENT_AREA_TO }}" ]; then
           echo "APARTMENT_AREA_TO=${{ vars.APARTMENT_AREA_TO }}" >> config.properties
-          echo "🔧 APARTMENT_AREA_TO set to: ${{ vars.APARTMENT_AREA_TO }}"
         fi
         
         if [ -n "${{ vars.NUMBER_OF_ROOMS_FROM }}" ]; then
           echo "NUMBER_OF_ROOMS_FROM=${{ vars.NUMBER_OF_ROOMS_FROM }}" >> config.properties
-          echo "🔧 NUMBER_OF_ROOMS_FROM set to: ${{ vars.NUMBER_OF_ROOMS_FROM }}"
         fi
         
         if [ -n "${{ vars.NUMBER_OF_ROOMS_TO }}" ]; then
           echo "NUMBER_OF_ROOMS_TO=${{ vars.NUMBER_OF_ROOMS_TO }}" >> config.properties
-          echo "🔧 NUMBER_OF_ROOMS_TO set to: ${{ vars.NUMBER_OF_ROOMS_TO }}"
         fi
         
         if [ -n "${{ vars.FLOOR_FROM }}" ]; then
           echo "FLOOR_FROM=${{ vars.FLOOR_FROM }}" >> config.properties
-          echo "🔧 FLOOR_FROM set to: ${{ vars.FLOOR_FROM }}"
         fi
         
         if [ -n "${{ vars.FLOOR_TO }}" ]; then
           echo "FLOOR_TO=${{ vars.FLOOR_TO }}" >> config.properties
-          echo "🔧 FLOOR_TO set to: ${{ vars.FLOOR_TO }}"
         fi
-        
-        echo ""
-        echo "📋 Generated config.properties:"
-        cat config.properties
         
     - name: Restore chat state (Auto-discovery mode only)
       id: restore-chat
@@ -155,42 +126,23 @@ jobs:
       run: |
         # Only initialize chat state in auto-discovery mode
         if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
-        if [ ! -f data/chat-ids.txt ]; then
-          echo "🔄 First run or no previous chat state found"
-          echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
-          echo "# Lines starting with # are comments" >> data/chat-ids.txt
-          echo "" >> data/chat-ids.txt
-          echo "✅ Initialized empty data/chat-ids.txt"
-                  else
-            echo "✅ Restored previous chat state"
-            echo "📋 Current chat IDs:"
-            grep -v '^#' data/chat-ids.txt | grep -v '^$' || echo "  (no active chats yet)"
+          if [ ! -f data/chat-ids.txt ]; then
+            echo "🔄 Creating empty chat state file"
+            echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
+            echo "# Lines starting with # are comments" >> data/chat-ids.txt
+            echo "" >> data/chat-ids.txt
           fi
-        else
-          echo "🔍 Skipping chat state initialization - not in auto-discovery mode"
         fi
         
     - name: Run apartment search
       run: |
         echo "🏠 Starting apartment search..."
-        echo "🔍 Current working directory: $(pwd)"
-        echo "🔍 Files in workspace root:"
-        ls -la | grep -E "(config\.properties)" || echo "  No config files found"
-        echo "🔍 Files in data/ directory:"
-        ls -la data/ | grep -E "(chat-ids\.txt|apartment-ids\.json)" || echo "  No data files found"
-        echo ""
         python scripts/run_search.py
-        echo "✅ Search completed"
         
     - name: Check Telegram results
       id: telegram-results
       run: |
-        echo "📊 Analyzing Telegram results..."
-        
         if [ -f "data/telegram_result.json" ]; then
-          echo "✅ Telegram result file found"
-          cat data/telegram_result.json
-          
           # Extract values from the JSON using Python for reliable parsing
           MESSAGES_SENT=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(data['messages_sent'])")
           CHATS_FOUND=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(data['chats_found'])")
@@ -202,26 +154,19 @@ jobs:
           echo "success=$SUCCESS" >> $GITHUB_OUTPUT
           echo "new_apartments_count=$NEW_APARTMENTS" >> $GITHUB_OUTPUT
           
-          echo "📊 Messages sent: $MESSAGES_SENT"
-          echo "📊 Chats found: $CHATS_FOUND"
-          echo "📊 Success: $SUCCESS"
-          echo "📊 New apartments: $NEW_APARTMENTS"
+          echo "📊 Messages: $MESSAGES_SENT, Chats: $CHATS_FOUND, New apartments: $NEW_APARTMENTS"
         else
-          echo "❌ No telegram result file found"
           echo "messages_sent=0" >> $GITHUB_OUTPUT
           echo "chats_found=0" >> $GITHUB_OUTPUT
           echo "success=false" >> $GITHUB_OUTPUT
           echo "new_apartments_count=0" >> $GITHUB_OUTPUT
         fi
     
-    - name: Finalize and upload persistent data
+    - name: Ensure data files exist
       if: always()
       run: |
-        echo "📁 Preparing persistent data for upload..."
-        
         # Ensure apartment tracking file exists
         if [ ! -f "data/apartment-ids.json" ]; then
-          echo "⚠️ Tracking file missing, creating empty one"
           cat > data/apartment-ids.json << 'EOF'
         {
           "ids": [],
@@ -234,71 +179,21 @@ jobs:
         # Ensure chat state file exists (only in auto-discovery mode)
         if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
           if [ ! -f data/chat-ids.txt ]; then
-            echo "⚠️ Chat state file missing, creating empty one"
             echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
             echo "# Lines starting with # are comments" >> data/chat-ids.txt
             echo "" >> data/chat-ids.txt
           fi
         fi
-        
-        echo ""
-        echo "📋 Final chat state:"
-        if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
-          if [ -f data/chat-ids.txt ]; then
-            echo "  File contents:"
-            cat data/chat-ids.txt | head -10
-            echo ""
-            CHAT_COUNT=$(grep -v '^#' data/chat-ids.txt | grep -v '^$' | wc -l)
-            echo "  Active chat IDs found: $CHAT_COUNT"
-            if [ $CHAT_COUNT -gt 0 ]; then
-              echo "  Chat IDs:"
-              grep -v '^#' data/chat-ids.txt | grep -v '^$' | sed 's/^/    /'
-            fi
-          else
-            echo "  (no data/chat-ids.txt file found)"
-          fi
-        else
-          echo "  (skipped - not in auto-discovery mode)"
-        fi
-        
-        echo ""
-        echo "📊 Final apartment tracking state:"
-        if [ -f "data/apartment-ids.json" ]; then
-          echo "  Tracking file exists:"
-          cat data/apartment-ids.json | head -5
-          echo "  (file ready for next run)"
-        else
-          echo "  (no tracking file found)"
-        fi
-        
-        echo "✅ Both persistent data files ready for upload"
     
-    - name: Debug before upload
-      if: always()
-      run: |
-        echo "🔍 Pre-upload verification:"
-        ls -la data/ || echo "  data/ directory not found"
-        if [ -f "data/apartment-ids.json" ]; then
-          echo "✅ apartment-ids.json exists for upload"
-          echo "📊 File size: $(wc -c < data/apartment-ids.json) bytes"
-          echo "📄 File content preview:"
-          head -3 data/apartment-ids.json
-        else
-          echo "❌ apartment-ids.json missing for upload!"
-        fi
+
     
     - name: Decide apartment tracking upload
       if: always()
       run: |
-        echo "🔍 Determining if apartment tracking should be uploaded..."
-        echo "🔍 Messages sent successfully: ${{ steps.telegram-results.outputs.success }}"
-        echo "🔍 New apartments count: ${{ steps.telegram-results.outputs.new_apartments_count }}"
-        
         if [[ "${{ steps.telegram-results.outputs.success }}" == "true" || "${{ steps.telegram-results.outputs.new_apartments_count }}" == "0" ]]; then
-          echo "✅ Will upload apartment tracking - either messages sent or no new apartments"
+          echo "✅ Will upload apartment tracking"
         else
-          echo "❌ Will NOT upload apartment tracking - messages failed and new apartments exist"
-          echo "❌ This prevents marking apartments as 'seen' when notifications failed"
+          echo "❌ Will NOT upload apartment tracking - prevents marking apartments as 'seen' when notifications failed"
         fi
         
     - name: Upload apartment tracking data
@@ -313,18 +208,13 @@ jobs:
     - name: Decide chat state upload
       if: always()
       run: |
-        echo "🔍 Determining if chat state should be uploaded..."
-        echo "🔍 Chats found: ${{ steps.telegram-results.outputs.chats_found }}"
-        echo "🔍 TELEGRAM_CHAT_ID configured: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
-        echo "🔍 DEBUG_CHAT configured: ${{ vars.DEBUG_CHAT != '' }}"
-        
         # Upload if chats were found OR if in auto-discovery mode (no exclusive config)
         if [[ "${{ steps.telegram-results.outputs.chats_found }}" != "0" ]]; then
-          echo "✅ Will upload chat state - chats were found/used"
+          echo "✅ Will upload chat state - chats found"
         elif [[ -z "${{ secrets.TELEGRAM_CHAT_ID }}" && -z "${{ vars.DEBUG_CHAT }}" ]]; then
-          echo "✅ Will upload chat state - auto-discovery mode (even if empty for next run)"
+          echo "✅ Will upload chat state - auto-discovery mode"
         else
-          echo "❌ Will NOT upload chat state - exclusive mode with no chats"
+          echo "❌ Will NOT upload chat state - exclusive mode"
         fi
         
     - name: Upload chat state
@@ -340,13 +230,8 @@ jobs:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         DEBUG_CHAT: ${{ vars.DEBUG_CHAT }}
         
-    - name: Clean up output files
+    - name: Clean up temporary files
       if: always()
       run: |
-        # Remove temporary files but keep persistent data (previous_apartment_ids.json, chat_ids.txt)
-        rm -f data/halooglasi_data.json
-        rm -f data/halooglasi_data.xlsx
-        rm -f logs/*.log
-        echo "🧹 Cleaned up temporary output files"
-        echo "📁 Preserved persistent data files:"
-        ls -la data/ | grep -E "(apartment-ids\.json|chat-ids\.txt)" || echo "  No persistent files found" 
+        rm -f data/halooglasi_data.json data/halooglasi_data.xlsx data/telegram_result.json
+        rm -f logs/*.log 

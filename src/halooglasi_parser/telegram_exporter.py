@@ -273,11 +273,11 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
     """Send each new apartment as a separate Telegram message to all chat IDs"""
     if not new_apartments:
         print("📱 No new apartments to send to Telegram")
-        return
-    
+        return {"messages_sent": 0, "chats_found": 0, "success": False}
+
     if bot_token == "YOUR_BOT_TOKEN_HERE":
         print("❌ Please configure TELEGRAM_BOT_TOKEN in config.py")
-        return
+        return {"messages_sent": 0, "chats_found": 0, "success": False}
     
     # Determine which chat IDs to use
     chat_ids = set()
@@ -327,7 +327,7 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
             print("❌ No chat IDs available. Please:")
             print("   1. Set TELEGRAM_CHAT_ID in config.py for exclusive mode, OR")
             print("   2. Send a message to your bot to discover chat IDs automatically")
-            return
+            return {"messages_sent": 0, "chats_found": 0, "success": False}
     
     print(f"\n📱 Sending {len(new_apartments)} new apartments to {len(chat_ids)} chat(s)...")
     
@@ -365,17 +365,24 @@ def send_new_apartments_to_telegram(new_apartments, bot_token, configured_chat_i
             chat_ids = remove_chat_id(chat_id, chat_ids)
     
     print(f"\n📱 Telegram export complete: {total_success_count} total messages sent to {len(chat_ids)} active chats")
+    
+    # Return result summary
+    return {
+        "messages_sent": total_success_count,
+        "chats_found": len(chat_ids),
+        "success": total_success_count > 0
+    }
 
 
 def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
     """Send the most recent apartment as a debug message to the specified chat ID"""
     if not apartments_list:
         print("📱 No apartments available for debug message")
-        return
-    
+        return {"messages_sent": 0, "chats_found": 0, "success": False}
+
     if bot_token == "YOUR_BOT_TOKEN_HERE":
         print("❌ Please configure TELEGRAM_BOT_TOKEN in config.py")
-        return
+        return {"messages_sent": 0, "chats_found": 0, "success": False}
     
     # Check if DEBUG_CHAT is properly configured
     debug_configured = (debug_chat_id and 
@@ -387,7 +394,7 @@ def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
     if not debug_configured:
         print("📱 DEBUG_CHAT not configured, skipping debug message")
         print(f"📱 DEBUG_CHAT value received: '{debug_chat_id}'")
-        return
+        return {"messages_sent": 0, "chats_found": 0, "success": False}
     
     # Get the most recent apartment (first in the list, as they're usually sorted by date)
     most_recent_apartment = apartments_list[0]
@@ -403,10 +410,13 @@ def send_debug_apartment_to_telegram(apartments_list, bot_token, debug_chat_id):
     
     if result is True:
         print(f"✅ DEBUG message sent successfully to chat {debug_chat_id}")
+        return {"messages_sent": 1, "chats_found": 1, "success": True}
     elif result == "REMOVE_CHAT_ID":
         print(f"🚫 DEBUG chat {debug_chat_id} has issues (bot blocked, chat not found, etc.)")
+        return {"messages_sent": 0, "chats_found": 1, "success": False}
     else:
         print(f"❌ Failed to send DEBUG message to chat {debug_chat_id}")
+        return {"messages_sent": 0, "chats_found": 1, "success": False}
 
 
  

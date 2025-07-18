@@ -132,6 +132,38 @@ jobs:
         echo ""
         python scripts/run_search.py
         echo "✅ Search completed"
+        
+    - name: Check Telegram results
+      id: telegram-results
+      run: |
+        echo "📊 Analyzing Telegram results..."
+        
+        if [ -f "data/telegram_result.json" ]; then
+          echo "✅ Telegram result file found"
+          cat data/telegram_result.json
+          
+          # Extract values from the JSON
+          MESSAGES_SENT=$(cat data/telegram_result.json | grep -o '"messages_sent": [0-9]*' | grep -o '[0-9]*')
+          CHATS_FOUND=$(cat data/telegram_result.json | grep -o '"chats_found": [0-9]*' | grep -o '[0-9]*')
+          SUCCESS=$(cat data/telegram_result.json | grep -o '"success": [a-z]*' | grep -o '[a-z]*')
+          NEW_APARTMENTS=$(cat data/telegram_result.json | grep -o '"new_apartments_count": [0-9]*' | grep -o '[0-9]*')
+          
+          echo "messages_sent=$MESSAGES_SENT" >> $GITHUB_OUTPUT
+          echo "chats_found=$CHATS_FOUND" >> $GITHUB_OUTPUT
+          echo "success=$SUCCESS" >> $GITHUB_OUTPUT
+          echo "new_apartments_count=$NEW_APARTMENTS" >> $GITHUB_OUTPUT
+          
+          echo "📊 Messages sent: $MESSAGES_SENT"
+          echo "📊 Chats found: $CHATS_FOUND"
+          echo "📊 Success: $SUCCESS"
+          echo "📊 New apartments: $NEW_APARTMENTS"
+        else
+          echo "❌ No telegram result file found"
+          echo "messages_sent=0" >> $GITHUB_OUTPUT
+          echo "chats_found=0" >> $GITHUB_OUTPUT
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "new_apartments_count=0" >> $GITHUB_OUTPUT
+        fi
     
     - name: Finalize and upload persistent data
       if: always()
@@ -206,8 +238,22 @@ jobs:
           echo "❌ apartment-ids.json missing for upload!"
         fi
     
-    - name: Upload persistent data
+    - name: Decide apartment tracking upload
       if: always()
+      run: |
+        echo "🔍 Determining if apartment tracking should be uploaded..."
+        echo "🔍 Messages sent successfully: ${{ steps.telegram-results.outputs.success }}"
+        echo "🔍 New apartments count: ${{ steps.telegram-results.outputs.new_apartments_count }}"
+        
+        if [[ "${{ steps.telegram-results.outputs.success }}" == "true" || "${{ steps.telegram-results.outputs.new_apartments_count }}" == "0" ]]; then
+          echo "✅ Will upload apartment tracking - either messages sent or no new apartments"
+        else
+          echo "❌ Will NOT upload apartment tracking - messages failed and new apartments exist"
+          echo "❌ This prevents marking apartments as 'seen' when notifications failed"
+        fi
+        
+    - name: Upload apartment tracking data
+      if: always() && (steps.telegram-results.outputs.success == 'true' || steps.telegram-results.outputs.new_apartments_count == '0')
       uses: actions/upload-artifact@v4
       with:
         name: apartment-ids
@@ -215,8 +261,25 @@ jobs:
         retention-days: 90
         if-no-files-found: warn
         
-    - name: Upload chat state
+    - name: Decide chat state upload
       if: always()
+      run: |
+        echo "🔍 Determining if chat state should be uploaded..."
+        echo "🔍 Chats found: ${{ steps.telegram-results.outputs.chats_found }}"
+        echo "🔍 TELEGRAM_CHAT_ID configured: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
+        echo "🔍 DEBUG_CHAT configured: ${{ secrets.DEBUG_CHAT != '' }}"
+        
+        # Upload if chats were found OR if in auto-discovery mode (no exclusive config)
+        if [[ "${{ steps.telegram-results.outputs.chats_found }}" != "0" ]]; then
+          echo "✅ Will upload chat state - chats were found/used"
+        elif [[ -z "${{ secrets.TELEGRAM_CHAT_ID }}" && -z "${{ secrets.DEBUG_CHAT }}" ]]; then
+          echo "✅ Will upload chat state - auto-discovery mode (even if empty for next run)"
+        else
+          echo "❌ Will NOT upload chat state - exclusive mode with no chats"
+        fi
+        
+    - name: Upload chat state
+      if: always() && (steps.telegram-results.outputs.chats_found != '0' || (env.TELEGRAM_CHAT_ID == '' && env.DEBUG_CHAT == ''))
       uses: actions/upload-artifact@v4
       with:
         name: chat-ids
@@ -224,6 +287,9 @@ jobs:
         retention-days: 90
         if-no-files-found: warn
       continue-on-error: true
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        DEBUG_CHAT: ${{ secrets.DEBUG_CHAT }}
         
     - name: Clean up output files
       if: always()

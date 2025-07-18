@@ -84,10 +84,24 @@ python scripts/run_search.py
 
 ## Configuration Options
 
-### Current Credentials
-- `TELEGRAM_BOT_TOKEN` - Bot token from @BotFather
+### Current Configuration Options
+
+#### Secrets (Sensitive Data)
+- `TELEGRAM_BOT_TOKEN` - Bot token from @BotFather (Required)
 - `TELEGRAM_CHAT_ID` - Optional: Specific chat ID for **EXCLUSIVE MODE** (disables bot for other users)
+
+#### Variables (Non-Sensitive Configuration)
 - `DEBUG_CHAT` - Optional debug chat ID that forces sending most recent listing when no new listings found
+- `SEARCH_TYPE` - 'buy' or 'rent' (default: buy)
+- `PRICE_FROM` - Minimum price in euros (default: 110000)
+- `PRICE_TO` - Maximum price in euros (default: 126000)
+- `APARTMENT_AREA_FROM` - Minimum area in m² (default: 45)
+- `APARTMENT_AREA_TO` - Maximum area in m²
+- `NUMBER_OF_ROOMS_FROM` - Minimum rooms (default: 4 = 2.0 rooms)
+- `NUMBER_OF_ROOMS_TO` - Maximum rooms (default: 9 = 4.5 rooms)
+- `FLOOR_FROM` - Minimum floor (default: PR = ground floor)
+- `FLOOR_TO` - Maximum floor
+- `NOTIFICATION_INTERVAL_HOURS` - Hours between notifications (default: 6)
 
 > **⚠️ IMPORTANT**: Setting `TELEGRAM_CHAT_ID` enables **EXCLUSIVE MODE** - the bot will ONLY serve that specific chat and will be disabled for all other users.
 
@@ -133,10 +147,38 @@ To temporarily override configuration:
 TELEGRAM_BOT_TOKEN="temp_token" python scripts/run_search.py
 ```
 
+## GitHub Actions Configuration
+
+For GitHub Actions deployment, configuration is handled through GitHub's Secrets and Variables:
+
+### Setup Instructions
+1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
+2. Click the **Secrets** tab and add:
+   - `TELEGRAM_BOT_TOKEN`: Your bot token from @BotFather
+   - `TELEGRAM_CHAT_ID`: (Optional) For exclusive mode
+3. Click the **Variables** tab and add any of:
+   - `DEBUG_CHAT`: Debug chat ID
+   - `SEARCH_TYPE`: Search type (buy/rent)
+   - `PRICE_FROM`: Minimum price
+   - `PRICE_TO`: Maximum price
+   - `APARTMENT_AREA_FROM`: Minimum area
+   - `APARTMENT_AREA_TO`: Maximum area
+   - `NUMBER_OF_ROOMS_FROM`: Minimum rooms
+   - `NUMBER_OF_ROOMS_TO`: Maximum rooms
+   - `FLOOR_FROM`: Minimum floor
+   - `FLOOR_TO`: Maximum floor
+
+### Configuration Priority
+GitHub Actions uses this order:
+1. **Repository Variables** (for non-sensitive config)
+2. **Repository Secrets** (for sensitive data like tokens)
+3. **Default Values** (built into the code)
+
 ## Best Practices
 
 1. **Never commit secrets** - Always use `config.properties` for sensitive data
 2. **Use environment variables** - For containerized deployments
-3. **Keep template updated** - When adding new configuration options
-4. **Validate configuration** - Test with `config_loader.validate_telegram_config()`
-5. **Document new options** - Update this guide when adding new credentials 
+3. **Use GitHub Variables** - For non-sensitive configuration in cloud deployments
+4. **Keep template updated** - When adding new configuration options
+5. **Validate configuration** - Test with `config_loader.validate_telegram_config()`
+6. **Document new options** - Update this guide when adding new credentials 

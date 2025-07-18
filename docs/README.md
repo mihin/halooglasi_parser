@@ -52,12 +52,23 @@ make schedule
 1. **Fork this repository** to your GitHub account
 2. **Enable Actions**: Go to Actions tab → Enable workflows
 
-### 2. Configure Secrets
+### 2. Configure Secrets and Variables
 1. Go to **Settings** → **Secrets and variables** → **Actions**
-2. Add repository secret:
+2. Add repository **secret**:
    - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
-3. Send a message to your bot from where you want notifications
-4. Bot will auto-discover and remember your chat!
+3. *Optional*: Add repository **variables** for customization:
+   - `DEBUG_CHAT`: Chat ID for debug messages when no new listings found
+   - `SEARCH_TYPE`: 'buy' or 'rent' (default: buy)
+   - `PRICE_FROM`: Minimum price in euros (default: 110000)
+   - `PRICE_TO`: Maximum price in euros (default: 126000)
+   - `APARTMENT_AREA_FROM`: Minimum area in m² (default: 45)
+   - `APARTMENT_AREA_TO`: Maximum area in m²
+   - `NUMBER_OF_ROOMS_FROM`: Minimum rooms (default: 4 = 2.0 rooms)
+   - `NUMBER_OF_ROOMS_TO`: Maximum rooms (default: 9 = 4.5 rooms)
+   - `FLOOR_FROM`: Minimum floor (default: PR = ground floor)
+   - `FLOOR_TO`: Maximum floor
+4. Send a message to your bot from where you want notifications
+5. Bot will auto-discover and remember your chat!
 
 ### 3. Done!
 - ✅ **Runs 3x daily** at 7am, 1pm, 7pm UTC

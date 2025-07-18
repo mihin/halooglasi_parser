@@ -71,17 +71,19 @@ jobs:
           echo "Will identify NEW vs EXISTING apartments"
         fi
     
-    - name: Create config from secrets
+    - name: Create config from secrets and variables
       run: |
         echo "🔧 Creating configuration..."
         echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > config.properties
         echo "NOTIFICATION_INTERVAL_HOURS=${{ vars.NOTIFICATION_INTERVAL_HOURS || '6' }}" >> config.properties
         
-        if [ -n "${{ secrets.DEBUG_CHAT }}" ]; then
-          echo "DEBUG_CHAT=${{ secrets.DEBUG_CHAT }}" >> config.properties
-          echo "🔧 DEBUG_CHAT set from repository secret"
+        # Debug Chat (moved to variables)
+        if [ -n "${{ vars.DEBUG_CHAT }}" ]; then
+          echo "DEBUG_CHAT=${{ vars.DEBUG_CHAT }}" >> config.properties
+          echo "🔧 DEBUG_CHAT set from repository variable"
         fi
         
+        # Telegram Chat ID (exclusive mode)
         if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
           echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> config.properties
           echo "✅ Exclusive chat mode enabled"
@@ -89,6 +91,53 @@ jobs:
           echo "✅ Auto-discovery mode enabled"
         fi
         
+        # Search Configuration Variables
+        if [ -n "${{ vars.SEARCH_TYPE }}" ]; then
+          echo "SEARCH_TYPE=${{ vars.SEARCH_TYPE }}" >> config.properties
+          echo "🔧 SEARCH_TYPE set to: ${{ vars.SEARCH_TYPE }}"
+        fi
+        
+        if [ -n "${{ vars.PRICE_FROM }}" ]; then
+          echo "PRICE_FROM=${{ vars.PRICE_FROM }}" >> config.properties
+          echo "🔧 PRICE_FROM set to: ${{ vars.PRICE_FROM }}"
+        fi
+        
+        if [ -n "${{ vars.PRICE_TO }}" ]; then
+          echo "PRICE_TO=${{ vars.PRICE_TO }}" >> config.properties
+          echo "🔧 PRICE_TO set to: ${{ vars.PRICE_TO }}"
+        fi
+        
+        if [ -n "${{ vars.APARTMENT_AREA_FROM }}" ]; then
+          echo "APARTMENT_AREA_FROM=${{ vars.APARTMENT_AREA_FROM }}" >> config.properties
+          echo "🔧 APARTMENT_AREA_FROM set to: ${{ vars.APARTMENT_AREA_FROM }}"
+        fi
+        
+        if [ -n "${{ vars.APARTMENT_AREA_TO }}" ]; then
+          echo "APARTMENT_AREA_TO=${{ vars.APARTMENT_AREA_TO }}" >> config.properties
+          echo "🔧 APARTMENT_AREA_TO set to: ${{ vars.APARTMENT_AREA_TO }}"
+        fi
+        
+        if [ -n "${{ vars.NUMBER_OF_ROOMS_FROM }}" ]; then
+          echo "NUMBER_OF_ROOMS_FROM=${{ vars.NUMBER_OF_ROOMS_FROM }}" >> config.properties
+          echo "🔧 NUMBER_OF_ROOMS_FROM set to: ${{ vars.NUMBER_OF_ROOMS_FROM }}"
+        fi
+        
+        if [ -n "${{ vars.NUMBER_OF_ROOMS_TO }}" ]; then
+          echo "NUMBER_OF_ROOMS_TO=${{ vars.NUMBER_OF_ROOMS_TO }}" >> config.properties
+          echo "🔧 NUMBER_OF_ROOMS_TO set to: ${{ vars.NUMBER_OF_ROOMS_TO }}"
+        fi
+        
+        if [ -n "${{ vars.FLOOR_FROM }}" ]; then
+          echo "FLOOR_FROM=${{ vars.FLOOR_FROM }}" >> config.properties
+          echo "🔧 FLOOR_FROM set to: ${{ vars.FLOOR_FROM }}"
+        fi
+        
+        if [ -n "${{ vars.FLOOR_TO }}" ]; then
+          echo "FLOOR_TO=${{ vars.FLOOR_TO }}" >> config.properties
+          echo "🔧 FLOOR_TO set to: ${{ vars.FLOOR_TO }}"
+        fi
+        
+        echo ""
         echo "📋 Generated config.properties:"
         cat config.properties
         
@@ -105,7 +154,7 @@ jobs:
     - name: Initialize chat state file
       run: |
         # Only initialize chat state in auto-discovery mode
-        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
+        if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
         if [ ! -f data/chat-ids.txt ]; then
           echo "🔄 First run or no previous chat state found"
           echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
@@ -183,7 +232,7 @@ jobs:
         fi
         
         # Ensure chat state file exists (only in auto-discovery mode)
-        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
+        if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
           if [ ! -f data/chat-ids.txt ]; then
             echo "⚠️ Chat state file missing, creating empty one"
             echo "# Telegram Chat IDs - one per line" > data/chat-ids.txt
@@ -194,7 +243,7 @@ jobs:
         
         echo ""
         echo "📋 Final chat state:"
-        if [[ -z "${{ secrets.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
+        if [[ -z "${{ vars.DEBUG_CHAT }}" && -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]]; then
           if [ -f data/chat-ids.txt ]; then
             echo "  File contents:"
             cat data/chat-ids.txt | head -10
@@ -267,12 +316,12 @@ jobs:
         echo "🔍 Determining if chat state should be uploaded..."
         echo "🔍 Chats found: ${{ steps.telegram-results.outputs.chats_found }}"
         echo "🔍 TELEGRAM_CHAT_ID configured: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
-        echo "🔍 DEBUG_CHAT configured: ${{ secrets.DEBUG_CHAT != '' }}"
+        echo "🔍 DEBUG_CHAT configured: ${{ vars.DEBUG_CHAT != '' }}"
         
         # Upload if chats were found OR if in auto-discovery mode (no exclusive config)
         if [[ "${{ steps.telegram-results.outputs.chats_found }}" != "0" ]]; then
           echo "✅ Will upload chat state - chats were found/used"
-        elif [[ -z "${{ secrets.TELEGRAM_CHAT_ID }}" && -z "${{ secrets.DEBUG_CHAT }}" ]]; then
+        elif [[ -z "${{ secrets.TELEGRAM_CHAT_ID }}" && -z "${{ vars.DEBUG_CHAT }}" ]]; then
           echo "✅ Will upload chat state - auto-discovery mode (even if empty for next run)"
         else
           echo "❌ Will NOT upload chat state - exclusive mode with no chats"
@@ -289,7 +338,7 @@ jobs:
       continue-on-error: true
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        DEBUG_CHAT: ${{ secrets.DEBUG_CHAT }}
+        DEBUG_CHAT: ${{ vars.DEBUG_CHAT }}
         
     - name: Clean up output files
       if: always()

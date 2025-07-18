@@ -191,11 +191,11 @@ jobs:
           echo "✅ Telegram result file found"
           cat data/telegram_result.json
           
-          # Extract values from the JSON
-          MESSAGES_SENT=$(cat data/telegram_result.json | grep -o '"messages_sent": [0-9]*' | grep -o '[0-9]*')
-          CHATS_FOUND=$(cat data/telegram_result.json | grep -o '"chats_found": [0-9]*' | grep -o '[0-9]*')
-          SUCCESS=$(cat data/telegram_result.json | grep -o '"success": [a-z]*' | grep -o '[a-z]*')
-          NEW_APARTMENTS=$(cat data/telegram_result.json | grep -o '"new_apartments_count": [0-9]*' | grep -o '[0-9]*')
+          # Extract values from the JSON using Python for reliable parsing
+          MESSAGES_SENT=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(data['messages_sent'])")
+          CHATS_FOUND=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(data['chats_found'])")
+          SUCCESS=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(str(data['success']).lower())")
+          NEW_APARTMENTS=$(python3 -c "import json; data=json.load(open('data/telegram_result.json')); print(data['new_apartments_count'])")
           
           echo "messages_sent=$MESSAGES_SENT" >> $GITHUB_OUTPUT
           echo "chats_found=$CHATS_FOUND" >> $GITHUB_OUTPUT
